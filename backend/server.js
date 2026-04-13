@@ -87,90 +87,202 @@ app.post('/api/send-email', async (req, res) => {
     const clienteHtml = `
 <!DOCTYPE html>
 <html lang="it">
-<head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#f4f1eb;font-family:Georgia,serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f1eb;padding:40px 0;">
-  <tr><td align="center">
-    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-
-      <!-- HEADER -->
-      <tr>
-        <td style="background:#1a1a2e;padding:32px 40px;text-align:center;border-bottom:3px solid #b8860b;">
-          <div style="font-family:Georgia,serif;font-size:26px;color:#d4af37;font-weight:bold;letter-spacing:1px;">Palmino Motors</div>
-      </tr>
-
-      <!-- BODY -->
-      <tr>
-        <td style="padding:36px 40px;">
-
-          <p style="margin:0 0 8px;font-size:15px;color:#2c2c2c;">Gentile <strong>${nome} ${cognome}</strong>,</p>
-          <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.6;">
-            la tua prenotazione per il test ride è confermata. Ti aspettiamo!
-          </p>
-
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conferma Test Ride</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f0e8;
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);
+      padding: 32px 40px;
+      text-align: center;
+      border-bottom: 3px solid #b8860b;
+    }
+    .header h1 {
+      font-family: 'Georgia', serif;
+      font-size: 28px;
+      color: #d4af37;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    .content {
+      padding: 36px 40px;
+      background: #ffffff;
+    }
+    .greeting {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      color: #2c2c2c;
+    }
+    .greeting strong {
+      color: #1a1a2e;
+    }
+    .message {
+      margin: 0 0 28px 0;
+      font-size: 14px;
+      color: #555555;
+      line-height: 1.6;
+    }
+    .details-box {
+      background: #faf7f0;
+      border-radius: 12px;
+      border: 1px solid #e8dfc8;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+    .details-title {
+      font-size: 11px;
+      color: #b8860b;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: bold;
+      padding: 20px 24px 8px 24px;
+    }
+    .details-table {
+      width: 100%;
+      padding: 0 24px 20px 24px;
+    }
+    .details-table td {
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    .details-label {
+      color: #666666;
+      width: 40%;
+    }
+    .details-value {
+      color: #1a1a2e;
+      font-weight: bold;
+    }
+    .note-box {
+      background: #fffbf0;
+      border-left: 3px solid #b8860b;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 28px;
+    }
+    .note-box p {
+      margin: 0;
+      font-size: 13px;
+      color: #664d00;
+      line-height: 1.6;
+    }
+    .contacts {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #e8dfc8;
+    }
+    .contacts p {
+      margin: 0 0 6px 0;
+      font-size: 13px;
+      color: #888888;
+    }
+    .contacts a {
+      color: #b8860b;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .contacts a:hover {
+      text-decoration: underline;
+    }
+    .footer {
+      background: #f5f0e8;
+      padding: 20px 40px;
+      text-align: center;
+      border-top: 1px solid #e8dfc8;
+    }
+    .footer p {
+      margin: 0;
+      font-size: 11px;
+      color: #8a7a6a;
+    }
+    @media (max-width: 600px) {
+      .content { padding: 24px 20px; }
+      .header { padding: 24px 20px; }
+      .footer { padding: 16px 20px; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f5f0e8;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:40px 0;">
+    <tr><td align="center">
+      <div class="container" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+        
+        <!-- HEADER -->
+        <div class="header" style="background:linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);padding:32px 40px;text-align:center;border-bottom:3px solid #b8860b;">
+          <h1 style="font-family:Georgia,serif;font-size:28px;color:#d4af37;margin:0;letter-spacing:1px;">Palmino Motors</h1>
+        </div>
+        
+        <!-- BODY -->
+        <div class="content" style="padding:36px 40px;background:#ffffff;">
+          <p class="greeting" style="margin:0 0 8px 0;font-size:16px;color:#2c2c2c;">Gentile <strong style="color:#1a1a2e;">${nome} ${cognome}</strong>,</p>
+          <p class="message" style="margin:0 0 28px 0;font-size:14px;color:#555555;line-height:1.6;">la tua prenotazione per il test ride è confermata. Ti aspettiamo!</p>
+          
           <!-- RIEPILOGO -->
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#faf7f0;border-radius:8px;border:1px solid #e8dfc8;margin-bottom:24px;">
-            <tr>
-              <td style="padding:20px 24px;border-bottom:1px solid #e8dfc8;">
-                <div style="font-size:10px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;font-weight:bold;">Dettagli Prenotazione</div>
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="font-size:13px;color:#555;padding:6px 0;width:40%;">Data</td>
-                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">${formattedDate}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-size:13px;color:#555;padding:6px 0;">Orario</td>
-                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">${time}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-size:13px;color:#555;padding:6px 0;">Moto</td>
-                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">${motorcycleBrand} ${motorcycleModel} (${
-                      motorcycleCategory
-                    })</td>
-                  </tr>
-                  <tr>
-                    <td style="font-size:13px;color:#555;padding:6px 0;">Durata</td>
-                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">30 minuti</td>
-                  </tr>
-                  <tr>
-                    <td style="font-size:13px;color:#555;padding:6px 0;">Patente</td>
-                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">Categoria ${patente}</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-
+          <div class="details-box" style="background:#faf7f0;border-radius:12px;border:1px solid #e8dfc8;margin-bottom:24px;overflow:hidden;">
+            <div class="details-title" style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;padding:20px 24px 8px 24px;">Dettagli Prenotazione</div>
+            <table class="details-table" style="width:100%;padding:0 24px 20px 24px;">
+              <tr>
+                <td class="details-label" style="padding:8px 0;font-size:14px;color:#666666;width:40%;">Data</td>
+                <td class="details-value" style="padding:8px 0;font-size:14px;color:#1a1a2e;font-weight:bold;">${formattedDate}</td>
+              </tr>
+              <tr>
+                <td class="details-label" style="padding:8px 0;font-size:14px;color:#666666;">Orario</td>
+                <td class="details-value" style="padding:8px 0;font-size:14px;color:#1a1a2e;font-weight:bold;">${time}</td>
+              </tr>
+              <tr>
+                <td class="details-label" style="padding:8px 0;font-size:14px;color:#666666;">Moto</td>
+                <td class="details-value" style="padding:8px 0;font-size:14px;color:#1a1a2e;font-weight:bold;">${motorcycleBrand} ${motorcycleModel}${motorcycleCategory ? ` (${motorcycleCategory})` : ''}</td>
+              </tr>
+              <tr>
+                <td class="details-label" style="padding:8px 0;font-size:14px;color:#666666;">Durata</td>
+                <td class="details-value" style="padding:8px 0;font-size:14px;color:#1a1a2e;font-weight:bold;">30 minuti</td>
+              </tr>
+              <tr>
+                <td class="details-label" style="padding:8px 0;font-size:14px;color:#666666;">Patente</td>
+                <td class="details-value" style="padding:8px 0;font-size:14px;color:#1a1a2e;font-weight:bold;">Categoria ${patente}</td>
+              </tr>
+            </table>
+          </div>
+          
           <!-- NOTA -->
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fffbf0;border-left:3px solid #b8860b;border-radius:4px;margin-bottom:28px;">
-            <tr>
-              <td style="padding:14px 18px;font-size:13px;color:#664d00;line-height:1.6;">
-                Presentati <strong>10 minuti prima</strong> con documento d'identità e patente di guida.
-              </td>
-            </tr>
-          </table>
-
+          <div class="note-box" style="background:#fffbf0;border-left:3px solid #b8860b;border-radius:8px;padding:14px 18px;margin-bottom:28px;">
+            <p style="margin:0;font-size:13px;color:#664d00;line-height:1.6;">Presentati <strong>10 minuti prima</strong> con documento d'identità e patente di guida.</p>
+          </div>
+          
           <!-- CONTATTI -->
-          <p style="margin:0 0 6px;font-size:13px;color:#888;">Per informazioni o modifiche:</p>
-          <p style="margin:0;font-size:13px;color:#2c2c2c;">
-            📞 <a href="tel:${companyInfo.phone.replace(/\s/g,'')}" style="color:#b8860b;text-decoration:none;">${companyInfo.phone}</a>
-            &nbsp;&nbsp;
-            ✉️ <a href="mailto:${companyInfo.email}" style="color:#b8860b;text-decoration:none;">${companyInfo.email}</a>
-          </p>
-
-        </td>
-      </tr>
-
-      <!-- FOOTER -->
-      <tr>
-        <td style="background:#f4f1eb;padding:20px 40px;text-align:center;border-top:1px solid #e8dfc8;">
-        </td>
-      </tr>
-
-    </table>
-  </td>
-</tr>
-</table>
+          <div class="contacts" style="margin-top:20px;padding-top:20px;border-top:1px solid #e8dfc8;">
+            <p style="margin:0 0 6px 0;font-size:13px;color:#888888;">Per informazioni o modifiche:</p>
+            <p style="margin:0;font-size:13px;color:#2c2c2c;">
+              📞 <a href="tel:${companyInfo.phone.replace(/\s/g,'')}" style="color:#b8860b;text-decoration:none;font-weight:500;">${companyInfo.phone}</a>
+              &nbsp;&nbsp;|&nbsp;&nbsp;
+              ✉️ <a href="mailto:${companyInfo.email}" style="color:#b8860b;text-decoration:none;font-weight:500;">${companyInfo.email}</a>
+            </p>
+          </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer" style="background:#f5f0e8;padding:20px 40px;text-align:center;border-top:1px solid #e8dfc8;">
+          <p style="margin:0;font-size:11px;color:#8a7a6a;">© 2026 Palmino Motors - Tutti i diritti riservati</p>
+        </div>
+        
+      </div>
+    </td></tr>
+  </table>
 </body>
 </html>`;
 
@@ -178,93 +290,178 @@ app.post('/api/send-email', async (req, res) => {
     const titolareHtml = `
 <!DOCTYPE html>
 <html lang="it">
-<head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#1a1a2e;font-family:Georgia,serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a2e;padding:40px 0;">
-  <tr><td align="center">
-    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
-
-      <!-- HEADER -->
-      <tr>
-        <td style="background:#1a1a2e;padding:28px 40px;border-bottom:3px solid #b8860b;">
-          <div style="font-family:Georgia,serif;font-size:22px;color:#d4af37;font-weight:bold;">Palmino Motors</div>
-      </tr>
-
-      <!-- ALERT BANNER -->
-      <tr>
-        <td style="background:#b8860b;padding:16px 40px;">
-          <div style="font-size:16px;color:#fff;font-weight:bold;letter-spacing:0.5px;">
-            🏍️ &nbsp;Nuova Prenotazione Test Ride
-          </div>
-        </td>
-      </tr>
-
-      <!-- BODY -->
-      <tr>
-        <td style="padding:32px 40px;">
-
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuova Prenotazione Test Ride</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f0e8;
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    }
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);
+      padding: 28px 40px;
+      text-align: center;
+      border-bottom: 3px solid #b8860b;
+    }
+    .header h1 {
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      color: #d4af37;
+      margin: 0;
+      letter-spacing: 1px;
+    }
+    .alert-banner {
+      background: #b8860b;
+      padding: 14px 40px;
+      text-align: center;
+    }
+    .alert-banner span {
+      font-size: 15px;
+      color: #ffffff;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .content {
+      padding: 32px 40px;
+      background: #ffffff;
+    }
+    .section-title {
+      font-size: 11px;
+      color: #b8860b;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .info-table {
+      width: 100%;
+      margin-bottom: 28px;
+      background: #faf7f0;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .info-table td {
+      padding: 12px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid #e8dfc8;
+    }
+    .info-table tr:last-child td {
+      border-bottom: none;
+    }
+    .info-label {
+      color: #666666;
+      width: 35%;
+      background: #faf7f0;
+    }
+    .info-value {
+      color: #1a1a2e;
+      font-weight: bold;
+      background: #ffffff;
+    }
+    .info-value a {
+      color: #b8860b;
+      text-decoration: none;
+    }
+    .info-value a:hover {
+      text-decoration: underline;
+    }
+    .footer {
+      background: #f5f0e8;
+      padding: 18px 40px;
+      text-align: center;
+      border-top: 1px solid #e8dfc8;
+    }
+    .footer p {
+      margin: 0;
+      font-size: 11px;
+      color: #8a7a6a;
+    }
+    @media (max-width: 600px) {
+      .content { padding: 24px 20px; }
+      .header { padding: 20px 20px; }
+      .alert-banner { padding: 12px 20px; }
+      .footer { padding: 14px 20px; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background:#f5f0e8;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:40px 0;">
+    <tr><td align="center">
+      <div class="container" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.12);">
+        
+        <!-- HEADER -->
+        <div class="header" style="background:linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 100%);padding:28px 40px;text-align:center;border-bottom:3px solid #b8860b;">
+          <h1 style="font-family:Georgia,serif;font-size:24px;color:#d4af37;margin:0;letter-spacing:1px;">Palmino Motors</h1>
+        </div>
+        
+        <!-- ALERT BANNER -->
+        <div class="alert-banner" style="background:#b8860b;padding:14px 40px;text-align:center;">
+          <span style="font-size:15px;color:#ffffff;font-weight:bold;letter-spacing:0.5px;">🏍️ Nuova Prenotazione Test Ride</span>
+        </div>
+        
+        <!-- BODY -->
+        <div class="content" style="padding:32px 40px;background:#ffffff;">
+          
           <!-- PRENOTAZIONE -->
-          <div style="font-size:10px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin-bottom:12px;">Prenotazione</div>
-          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-            <tr style="background:#faf7f0;">
-              <td style="padding:12px 16px;font-size:13px;color:#555;width:35%;border-bottom:1px solid #e8dfc8;">Data</td>
-              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${formattedDate}</td>
+          <div class="section-title" style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin-bottom:12px;">Prenotazione</div>
+          <table class="info-table" style="width:100%;margin-bottom:28px;background:#faf7f0;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td class="info-label" style="padding:12px 16px;font-size:14px;color:#666666;width:35%;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Data</td>
+              <td class="info-value" style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#ffffff;border-bottom:1px solid #e8dfc8;">${formattedDate}</td>
             </tr>
             <tr>
-              <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Orario</td>
-              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${time}</td>
+              <td class="info-label" style="padding:12px 16px;font-size:14px;color:#666666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Orario</td>
+              <td class="info-value" style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#ffffff;border-bottom:1px solid #e8dfc8;">${time}</td>
             </tr>
-            <tr style="background:#faf7f0;">
-              <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Moto</td>
-              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${motorcycleBrand} ${motorcycleModel} (${
-      motorcycleCategory
-    })</td>
+            <tr>
+              <td class="info-label" style="padding:12px 16px;font-size:14px;color:#666666;background:#faf7f0;">Moto</td>
+              <td class="info-value" style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#ffffff;">${motorcycleBrand} ${motorcycleModel}${motorcycleCategory ? ` (${motorcycleCategory})` : ''}</td>
             </tr>
           </table>
-
+          
           <!-- CLIENTE -->
-          <div style="font-size:10px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin-bottom:12px;">Cliente</div>
-          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-            <tr style="background:#faf7f0;">
-              <td style="padding:12px 16px;font-size:13px;color:#555;width:35%;border-bottom:1px solid #e8dfc8;">Nome</td>
-              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${nome} ${cognome}</td>
+          <div class="section-title" style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin-bottom:12px;">Cliente</div>
+          <table class="info-table" style="width:100%;margin-bottom:28px;background:#faf7f0;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td class="info-label" style="padding:12px 16px;font-size:14px;color:#666666;width:35%;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Nome</td>
+              <td class="info-value" style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#ffffff;border-bottom:1px solid #e8dfc8;">${nome} ${cognome}</td>
             </tr>
             <tr>
-              <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Telefono</td>
-              <td style="padding:12px 16px;font-size:14px;border-bottom:1px solid #e8dfc8;">
-                <a href="tel:${telefono.replace(/\s/g,'')}" style="color:#b8860b;text-decoration:none;font-weight:bold;">${telefono}</a>
-              </td>
-            </tr>
-            <tr style="background:#faf7f0;">
-              <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Email</td>
-              <td style="padding:12px 16px;font-size:14px;border-bottom:1px solid #e8dfc8;">
-                <a href="mailto:${email}" style="color:#b8860b;text-decoration:none;font-weight:bold;">${email}</a>
-              </td>
+              <td class="info-label" style="padding:12px 16px;font-size:14px;color:#666666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Telefono</td>
+              <td class="info-value" style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#ffffff;border-bottom:1px solid #e8dfc8;"><a href="tel:${telefono.replace(/\s/g,'')}" style="color:#b8860b;text-decoration:none;">${telefono}</a></td>
             </tr>
             <tr>
-              <td style="padding:12px 16px;font-size:13px;color:#555;">Patente</td>
-              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;">Categoria ${patente}</td>
+              <td class="info-label" style="padding:12px 16px;font-size:14px;color:#666666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Email</td>
+              <td class="info-value" style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#ffffff;border-bottom:1px solid #e8dfc8;"><a href="mailto:${email}" style="color:#b8860b;text-decoration:none;">${email}</a></td>
+            </tr>
+            <tr>
+              <td class="info-label" style="padding:12px 16px;font-size:14px;color:#666666;background:#faf7f0;">Patente</td>
+              <td class="info-value" style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#ffffff;">Categoria ${patente}</td>
             </tr>
           </table>
-
-          <!-- AZIONE RAPIDA -->
-          <table width="100%" cellpadding="0" cellspacing="0">
-          </table>
-
-        </td>
-      </tr>
-
-      <!-- FOOTER -->
-      <tr>
-        <td style="background:#1a1a2e;padding:18px 40px;text-align:center;">
-          <p style="margin:0;font-size:11px;color:#5a5a7a;">© 2026 Palmino Motors – Sistema di prenotazione automatico</p>
-        </td>
-      </tr>
-
-    </table>
-  </td>
-</tr>
-</table>
+          
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer" style="background:#f5f0e8;padding:18px 40px;text-align:center;border-top:1px solid #e8dfc8;">
+          <p style="margin:0;font-size:11px;color:#8a7a6a;">© 2026 Palmino Motors - Sistema di prenotazione automatico</p>
+        </div>
+        
+      </div>
+    </td></tr>
+  </table>
 </body>
 </html>`;
 
