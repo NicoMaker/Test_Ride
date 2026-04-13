@@ -40,29 +40,6 @@ function padTwo(n) {
   return String(n).padStart(2, "0");
 }
 
-// Logo aziendale in base64 (placeholder SVG inline — sostituire con il proprio logo)
-// Per usare il logo reale: convertire logo.png in base64 e sostituire la stringa qui sotto.
-// Esempio: const LOGO_BASE64 = fs.readFileSync(path.join(__dirname, '../frontend/img/logo.png')).toString('base64');
-// Poi usare: <img src="data:image/png;base64,${LOGO_BASE64}" ...>
-function getLogoTag(companyName) {
-  // Tentiamo di caricare il logo dal filesystem; se non disponibile usiamo testo
-  const logoPath = path.join(__dirname, "../frontend/img/Logo.png");
-  try {
-    if (fs.existsSync(logoPath)) {
-      const logoB64 = fs.readFileSync(logoPath).toString("base64");
-      return `<img src="data:image/png;base64,${logoB64}" alt="${companyName}" style="height:54px;width:auto;display:block;margin:0 auto 12px auto;border-radius:50%;border:2px solid #b8860b;">`;
-    }
-  } catch (_) {}
-  // Fallback: iniziali in cerchio dorato
-  const initials = companyName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-  return `<div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#b8860b,#d4af37);display:flex;align-items:center;justify-content:center;margin:0 auto 12px auto;font-family:Georgia,serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:1px;">${initials}</div>`;
-}
-
 // ==================== ROUTES ====================
 
 app.get("/api/company-info", (req, res) => {
@@ -136,8 +113,6 @@ app.post("/api/send-email", async (req, res) => {
            <span style="font-weight:400;font-size:12px;color:#388e3c;">${fullAddress}</span>
          </a>`;
 
-    const logoTag = getLogoTag(companyInfo.name || "PM");
-
     // Dati titolare(i) per email manager
     const managersInfo = Array.isArray(managers) ? managers : [];
     const managersRows = managersInfo
@@ -178,7 +153,6 @@ app.post("/api/send-email", async (req, res) => {
 
   <!-- HEADER -->
   <div style="background:linear-gradient(135deg,#1a1a2e 0%,#2a2a3e 100%);padding:32px 40px;text-align:center;border-bottom:3px solid #b8860b;">
-    ${logoTag}
     <h1 style="font-family:Georgia,serif;font-size:26px;color:#d4af37;margin:0;letter-spacing:1px;">${companyInfo.name || "Palmino Motors"}</h1>
     <p style="margin:4px 0 0;font-size:11px;color:#a09070;letter-spacing:2px;text-transform:uppercase;">Concessionaria Ufficiale</p>
   </div>
@@ -270,7 +244,6 @@ app.post("/api/send-email", async (req, res) => {
 
   <!-- HEADER -->
   <div style="background:linear-gradient(135deg,#1a1a2e 0%,#2a2a3e 100%);padding:28px 40px;text-align:center;border-bottom:3px solid #b8860b;">
-    ${logoTag}
     <h1 style="font-family:Georgia,serif;font-size:22px;color:#d4af37;margin:0;letter-spacing:1px;">${companyInfo.name || "Palmino Motors"}</h1>
     <p style="margin:4px 0 0;font-size:10px;color:#a09070;letter-spacing:2px;text-transform:uppercase;">Pannello Gestione Prenotazioni</p>
   </div>
