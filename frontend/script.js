@@ -14,15 +14,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
 });
 
+// ==================== UTILITY: PAD DATE ====================
+function padTwo(n) {
+  return String(n).padStart(2, '0');
+}
+
+function formatDateLabel(day, month, year) {
+  return `${padTwo(day)}/${padTwo(month)}/${year}`;
+}
+
 // ==================== LOAD ALL DATA ====================
 async function loadAllData() {
   try {
-    // Load company info
     const companyRes = await fetch('company-info.json');
     const companyData = await companyRes.json();
     state.companyInfo = companyData;
 
-    // Update UI with company info
     document.getElementById('companyAddress').textContent =
       `${companyData.company.address}, ${companyData.company.city}`;
 
@@ -34,13 +41,11 @@ async function loadAllData() {
     emailLink.href = `mailto:${companyData.company.email}`;
     emailLink.textContent = companyData.company.email;
 
-    // Maps link
     if (companyData.company.mapsUrl) {
       const mapsLink = document.getElementById('companyMapsLink');
       if (mapsLink) mapsLink.href = companyData.company.mapsUrl;
     }
 
-    // WhatsApp link
     if (companyData.company.whatsapp) {
       const waLink = document.getElementById('whatsappLink');
       if (waLink) {
@@ -48,15 +53,12 @@ async function loadAllData() {
       }
     }
 
-    // Load dates and time slots from company info
     loadDates(companyData.testRideSettings.daysAvailable);
     loadTimeSlots(companyData.testRideSettings.timeSlots);
 
-    // Load motorcycles from separate file
     const motoRes = await fetch('motorcycles.json');
     state.motorcycles = await motoRes.json();
 
-    // Populate brands
     loadBrands();
 
   } catch (error) {
@@ -81,7 +83,6 @@ function setupEventListeners() {
   document.getElementById('date').addEventListener('change', handleDateChange);
   document.getElementById('time').addEventListener('change', handleTimeChange);
 
-  // Modal close buttons
   document.getElementById('closeBookingsModal').addEventListener('click', () => {
     document.getElementById('bookingsModal').classList.remove('show');
   });
@@ -92,7 +93,6 @@ function setupEventListeners() {
   document.getElementById('closeErrorModal').addEventListener('click', closeErrorModal);
   document.getElementById('closeErrorBtn').addEventListener('click', closeErrorModal);
 
-  // Close modal clicking outside
   window.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal')) {
       e.target.classList.remove('show');
@@ -115,7 +115,6 @@ function prevStep(currentStep) {
 }
 
 function validateStep(step) {
-  // Step 3 uses visual slot pickers, validate manually
   if (step === 3) {
     let isValid = true;
     if (!document.getElementById('date').value) {
@@ -219,7 +218,6 @@ function updateFormView() {
 }
 
 // ==================== MOTORCYCLES ====================
-// Returns true if the moto is allowed for the selected patente
 function motoAllowedForPatente(moto) {
   const patente = document.getElementById('patente').value;
   if (!patente) return true;
@@ -230,7 +228,6 @@ function motoAllowedForPatente(moto) {
 }
 
 function loadBrands() {
-  const patente = document.getElementById('patente').value;
   const allowed = state.motorcycles.filter(motoAllowedForPatente);
   const brands = [...new Set(allowed.map(m => m.brand))].sort();
   const brandSelect = document.getElementById('brand');
@@ -340,6 +337,15 @@ function displayMotorcycleDetails(moto) {
     return;
   }
 
+  badge.className = `license-badge ${canRide ? 'compatible' : 'incompatible'}`;
+  badge.style.display = 'flex';
+  badge.innerHTML = `
+    <i class="fas ${canRide ? 'fa-check-circle' : 'fa-times-circle'}"></i>
+    <span class="badge-text">
+      ${canRide ? 'Moto compatibile con la tua patente' : 'Moto NON compatibile con la tua patente'}
+      <small>${reason}</small>
+    </span>
+  `;
 
   document.getElementById('motorcycleDetails').classList.add('show');
 }
@@ -352,10 +358,11 @@ function loadDates(daysAvailable) {
   daysAvailable.forEach(day => {
     if (!day.available) return;
 
-    const month = day.month.padStart(2, '0');
-    const d = day.day.padStart(2, '0');
+    const month = padTwo(day.month);
+    const d = padTwo(day.day);
     const value = `${day.year}-${month}-${d}`;
-    const label = `${day.day}/${day.month}/${day.year}`;
+    // FIX: sempre 09/05 e 10/05 con zero iniziale
+    const label = formatDateLabel(day.day, day.month, day.year);
 
     const option = document.createElement('option');
     option.value = value;
@@ -408,6 +415,7 @@ function loadTimeSlots(slots) {
       btn.classList.add('selected');
       document.getElementById('time').value = slot;
       state.formData.selectedTime = slot;
+      document.getElementById('timeError').textContent = '';
     });
     container.appendChild(btn);
   });
@@ -439,8 +447,16 @@ function updateSummary() {
   document.getElementById('summaryModel').textContent = moto ? moto.model : '-';
   document.getElementById('summaryCategory').textContent = moto ? moto.category : '-';
 
-  const dateSelect = document.getElementById('date');
-  const dateText = dateSelect.options[dateSelect.selectedIndex]?.text || '-';
+  // FIX: mostra data con zero iniziale nel riepilogo
+  const dateVal = document.getElementById('date').value;
+  let dateText = '-';
+  if (dateVal) {
+    const [y, m, d] = dateVal.split('-');
+    const dateObj = new Date(dateVal + 'T00:00:00');
+    const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'long' });
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    dateText = `${cap(dayName)} ${padTwo(d)}/${padTwo(m)}/${y}`;
+  }
   document.getElementById('summaryDate').textContent = dateText;
   document.getElementById('summaryTime').textContent = state.formData.selectedTime || '-';
 }
@@ -502,7 +518,8 @@ async function sendConfirmationEmail(booking) {
     motorcycleCategory: booking.motorcycleCategory,
     date: booking.date,
     time: booking.time,
-    companyInfo: state.companyInfo.company
+    companyInfo: state.companyInfo.company,
+    managers: state.companyInfo.managers
   };
 
   const response = await fetch('/api/send-email', {
@@ -533,8 +550,10 @@ function resetForm() {
 
 // ==================== MODALS ====================
 function showSuccessModal(booking) {
+  const [y, m, d] = booking.date.split('-');
+  const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
   document.getElementById('successMessage').textContent =
-    `La tua prenotazione è confermata per ${formatDate(booking.date)} alle ${booking.time}`;
+    `La tua prenotazione è confermata per il ${dateFormatted} alle ${booking.time}`;
   document.getElementById('successModal').classList.add('show');
 }
 
