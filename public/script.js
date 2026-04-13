@@ -357,12 +357,6 @@ function displayMotorcycleDetails(moto) {
   }
 
   badge.style.display = 'flex';
-  badge.className = `license-badge compatible`;
-  badge.innerHTML = `<i class="fas fa-check-circle"></i>
-     <span class="badge-text">
-       Compatibile con patente <strong>${patente}</strong>
-       <small>${kw} kW${patente === 'A1' ? ` · ${moto.cc} cc` : ''}</small>
-     </span>`;
 
   document.getElementById('motorcycleDetails').classList.add('show');
 }
