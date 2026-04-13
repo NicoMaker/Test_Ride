@@ -104,8 +104,6 @@ app.post('/api/send-email', async (req, res) => {
       <tr>
         <td style="background:#1a1a2e;padding:32px 40px;text-align:center;border-bottom:3px solid #b8860b;">
           <div style="font-family:Georgia,serif;font-size:26px;color:#d4af37;font-weight:bold;letter-spacing:1px;">Palmino Motors</div>
-          <div style="font-size:11px;color:#8a7a5a;letter-spacing:3px;text-transform:uppercase;margin-top:4px;">Hub Operativo</div>
-        </td>
       </tr>
 
       <!-- BODY -->
@@ -167,8 +165,6 @@ app.post('/api/send-email', async (req, res) => {
       <!-- FOOTER -->
       <tr>
         <td style="background:#f4f1eb;padding:20px 40px;text-align:center;border-top:1px solid #e8dfc8;">
-          <p style="margin:0;font-size:11px;color:#aaa;">© 2026 Palmino Motors – Hub Operativo &nbsp;·&nbsp; Messaggio automatico</p>
-        </td>
       </tr>
 
     </table>
@@ -191,8 +187,6 @@ app.post('/api/send-email', async (req, res) => {
       <tr>
         <td style="background:#1a1a2e;padding:28px 40px;border-bottom:3px solid #b8860b;">
           <div style="font-family:Georgia,serif;font-size:22px;color:#d4af37;font-weight:bold;">Palmino Motors</div>
-          <div style="font-size:11px;color:#8a7a5a;letter-spacing:3px;text-transform:uppercase;margin-top:3px;">Hub Operativo · Gestione Prenotazioni</div>
-        </td>
       </tr>
 
       <!-- ALERT BANNER -->
