@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import fs from 'fs';
+import os from 'os';
 
 dotenv.config();
 
@@ -289,6 +290,28 @@ app.post('/api/send-email', async (req, res) => {
   }
 });
 
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+}
+
+async function getPublicIP() {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip;
+  } catch (error) {
+    return null;
+  }
+}
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Server attivo e funzionante' });
@@ -299,7 +322,17 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'Errore del server', error: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`🏍️  Palmino Motors in esecuzione su http://localhost:${PORT}`);
-  console.log(`📧 Email: ${process.env.EMAIL_USER}`);
+// --- Nuovo blocco app.listen ---
+app.listen(PORT, "0.0.0.0", async () => {
+  const localIP = getLocalIP();
+  const publicIP = await getPublicIP();
+  const publicBaseUrl = publicIP
+    ? `http://${publicIP}:${PORT}`
+    : `http://localhost:${PORT}`;
+
+  console.log("✅ Backend avviato");
+  console.log(`🌐 IP Pubblico: ${publicIP ? publicBaseUrl : "non disponibile"}`);
+  console.log(`🏠 IP Locale: http://${localIP}:${PORT}`);
+  console.log(`📍 Localhost: http://localhost:${PORT}`);
+  console.log(`📧 Server email pronto}`);
 });
