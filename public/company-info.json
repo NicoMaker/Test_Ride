@@ -1,0 +1,172 @@
+{
+  "company": {
+    "name": "Moto Rossi - Concessionaria Ufficiale",
+    "address": "Via Nazionale 1",
+    "city": "Roma",
+    "cap": "20100",
+    "province": "RM",
+    "country": "Italia",
+    "piva": "1234567890",
+    "email": "info@motorossi.com",
+    "phone": "+39 1234567890",
+    "logo": "img/logo.png"
+  },
+  "managers": [
+    {
+      "name": "Rofer Manreo Messa",
+      "email": "rofer.messa@motorossi.com",
+      "phone": "+39 333 1234567",
+      "role": "Direttore Concessionaria"
+    },
+    {
+      "name": "Titolare",
+      "email": "titolare@motorossi.com",
+      "phone": "+39 333 7654321",
+      "role": "Titolare"
+    }
+  ],
+  "settings": {
+    "currency": "EUR",
+    "currencySymbol": "€",
+    "dateFormat": "DD/MM/YYYY",
+    "decimalSeparator": ",",
+    "thousandsSeparator": "."
+  },
+  "testRideSettings": {
+    "daysAvailable": [
+      {
+        "day": "6",
+        "month": "9",
+        "year": "2025",
+        "dayName": "Sabato",
+        "available": true
+      },
+      {
+        "day": "7",
+        "month": "9",
+        "year": "2025",
+        "dayName": "Domenica",
+        "available": true
+      }
+    ],
+    "timeSlots": [
+      "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
+      "12:00", "12:30", "14:00", "14:30", "15:00", "15:30",
+      "16:00", "16:30", "17:00", "17:30", "18:00", "18:30",
+      "19:00", "19:30", "20:00"
+    ],
+    "durationMinutes": 30
+  },
+  "motorcycles": [
+    {
+      "id": "duc001",
+      "brand": "Ducati",
+      "model": "Monster 937",
+      "cc": 937,
+      "power": "111 CV",
+      "image": "img/ducati-monster.jpg",
+      "color": "Rosso",
+      "year": 2024,
+      "description": "Naked versatile e aggressiva"
+    },
+    {
+      "id": "duc002",
+      "brand": "Ducati",
+      "model": "Panigale V4",
+      "cc": 1103,
+      "power": "214 CV",
+      "image": "img/ducati-panigale.jpg",
+      "color": "Rosso",
+      "year": 2024,
+      "description": "Supersportiva di altissimo livello"
+    },
+    {
+      "id": "duc003",
+      "brand": "Ducati",
+      "model": "Multistrada V4",
+      "cc": 1158,
+      "power": "170 CV",
+      "image": "img/ducati-multistrada.jpg",
+      "color": "Blu",
+      "year": 2024,
+      "description": "Avventuriera comoda e performante"
+    },
+    {
+      "id": "yam001",
+      "brand": "Yamaha",
+      "model": "YZF-R7",
+      "cc": 689,
+      "power": "73 CV",
+      "image": "img/yamaha-r7.jpg",
+      "color": "Blu",
+      "year": 2024,
+      "description": "Sportiva leggera e agile"
+    },
+    {
+      "id": "yam002",
+      "brand": "Yamaha",
+      "model": "MT-09",
+      "cc": 889,
+      "power": "119 CV",
+      "image": "img/yamaha-mt09.jpg",
+      "color": "Nero",
+      "year": 2024,
+      "description": "Naked potente e divertente"
+    },
+    {
+      "id": "yam003",
+      "brand": "Yamaha",
+      "model": "TMAX 560",
+      "cc": 560,
+      "power": "48 CV",
+      "image": "img/yamaha-tmax.jpg",
+      "color": "Bianco",
+      "year": 2024,
+      "description": "Maxiscooter performante"
+    },
+    {
+      "id": "hon001",
+      "brand": "Honda",
+      "model": "CB500F",
+      "cc": 471,
+      "power": "48 CV",
+      "image": "img/honda-cb500.jpg",
+      "color": "Rosso",
+      "year": 2024,
+      "description": "Naked versatile e affidabile"
+    },
+    {
+      "id": "hon002",
+      "brand": "Honda",
+      "model": "CBR1000RR",
+      "cc": 999,
+      "power": "217 CV",
+      "image": "img/honda-cbr.jpg",
+      "color": "Nero",
+      "year": 2024,
+      "description": "Supersportiva leggendaria"
+    },
+    {
+      "id": "kaw001",
+      "brand": "Kawasaki",
+      "model": "Ninja H2",
+      "cc": 998,
+      "power": "231 CV",
+      "image": "img/kawasaki-ninja.jpg",
+      "color": "Verde",
+      "year": 2024,
+      "description": "Supersportiva con turbina"
+    },
+    {
+      "id": "kaw002",
+      "brand": "Kawasaki",
+      "model": "Z900",
+      "cc": 948,
+      "power": "125 CV",
+      "image": "img/kawasaki-z900.jpg",
+      "color": "Verde",
+      "year": 2024,
+      "description": "Naked potente e aggressiva"
+    }
+  ]
+}

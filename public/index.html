@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Ride - Moto Rossi</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="logo-section">
+                <img src="img/logo.png" alt="Logo" class="logo-img">
+                <div class="brand-info">
+                    <h1>Moto Rossi</h1>
+                    <p>Prenotazione Test Ride</p>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="#home" class="active">Home</a>
+                <a href="#" id="viewBookingsBtn">Prenotazioni</a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Hero Section -->
+            <section class="hero">
+                <div class="hero-content">
+                    <h2>Prova Una Moto Oggi</h2>
+                    <p>Sperimenta il brivido di guidare le migliori moto del mercato</p>
+                </div>
+            </section>
+
+            <!-- Booking Form Section -->
+            <section class="booking-section">
+                <div class="container">
+                    <div class="form-wrapper">
+                        <div class="form-header">
+                            <h2>Prenota Il Tuo Test Ride</h2>
+                            <p>Compila il modulo per prenotare il tuo test ride gratuito</p>
+                        </div>
+
+                        <form id="testRideForm" novalidate>
+                            <!-- Step 1: Personal Info -->
+                            <div class="form-step active" id="step1">
+                                <h3><span class="step-number">1</span> Dati Personali</h3>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="nome">Nome <span class="required">*</span></label>
+                                        <div class="input-group">
+                                            <i class="fas fa-user"></i>
+                                            <input type="text" id="nome" name="nome" required>
+                                        </div>
+                                        <span class="error" id="nomeError"></span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="cognome">Cognome <span class="required">*</span></label>
+                                        <div class="input-group">
+                                            <i class="fas fa-user"></i>
+                                            <input type="text" id="cognome" name="cognome" required>
+                                        </div>
+                                        <span class="error" id="cognomeError"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="email">Email <span class="required">*</span></label>
+                                        <div class="input-group">
+                                            <i class="fas fa-envelope"></i>
+                                            <input type="email" id="email" name="email" required>
+                                        </div>
+                                        <span class="error" id="emailError"></span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="telefono">Telefono <span class="required">*</span></label>
+                                        <div class="input-group">
+                                            <i class="fas fa-phone"></i>
+                                            <input type="tel" id="telefono" name="telefono" required>
+                                        </div>
+                                        <span class="error" id="telefonoError"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="patente">Categoria Patente <span class="required">*</span></label>
+                                    <div class="input-group">
+                                        <i class="fas fa-id-card"></i>
+                                        <select id="patente" name="patente" required>
+                                            <option value="">Seleziona categoria...</option>
+                                            <option value="A1">A1 (125cc)</option>
+                                            <option value="A2">A2 (35kW)</option>
+                                            <option value="A">A (Illimitata)</option>
+                                        </select>
+                                    </div>
+                                    <span class="error" id="patenteError"></span>
+                                </div>
+
+                                <div class="form-navigation">
+                                    <button type="button" class="btn-next" onclick="nextStep(1)">Avanti <i class="fas fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Motorcycle Selection -->
+                            <div class="form-step" id="step2">
+                                <h3><span class="step-number">2</span> Seleziona Moto</h3>
+
+                                <div class="form-group">
+                                    <label for="brand">Marca <span class="required">*</span></label>
+                                    <div class="input-group">
+                                        <i class="fas fa-motorcycle"></i>
+                                        <select id="brand" name="brand" required>
+                                            <option value="">Seleziona marca...</option>
+                                        </select>
+                                    </div>
+                                    <span class="error" id="brandError"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="model">Modello <span class="required">*</span></label>
+                                    <div class="input-group">
+                                        <i class="fas fa-cogs"></i>
+                                        <select id="model" name="model" required>
+                                            <option value="">Seleziona modello...</option>
+                                        </select>
+                                    </div>
+                                    <span class="error" id="modelError"></span>
+                                </div>
+
+                                <!-- Motorcycle Details -->
+                                <div id="motorcycleDetails" class="motorcycle-details">
+                                    <div class="details-grid">
+                                        <div class="detail-item">
+                                            <span class="detail-label">Cilindrata</span>
+                                            <span class="detail-value" id="detailCC">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Potenza</span>
+                                            <span class="detail-value" id="detailPower">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Colore</span>
+                                            <span class="detail-value" id="detailColor">-</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Anno</span>
+                                            <span class="detail-value" id="detailYear">-</span>
+                                        </div>
+                                    </div>
+                                    <p id="detailDescription" class="detail-description"></p>
+                                </div>
+
+                                <div class="form-navigation">
+                                    <button type="button" class="btn-prev" onclick="prevStep(2)"><i class="fas fa-arrow-left"></i> Indietro</button>
+                                    <button type="button" class="btn-next" onclick="nextStep(2)">Avanti <i class="fas fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Date & Time -->
+                            <div class="form-step" id="step3">
+                                <h3><span class="step-number">3</span> Data e Orario</h3>
+
+                                <div class="form-group">
+                                    <label for="date">Data <span class="required">*</span></label>
+                                    <div class="input-group">
+                                        <i class="fas fa-calendar"></i>
+                                        <select id="date" name="date" required>
+                                            <option value="">Seleziona data...</option>
+                                        </select>
+                                    </div>
+                                    <span class="error" id="dateError"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="time">Orario <span class="required">*</span></label>
+                                    <div class="input-group">
+                                        <i class="fas fa-clock"></i>
+                                        <select id="time" name="time" required>
+                                            <option value="">Seleziona orario...</option>
+                                        </select>
+                                    </div>
+                                    <span class="error" id="timeError"></span>
+                                </div>
+
+                                <div class="time-slots">
+                                    <p class="time-slots-label">Orari Disponibili:</p>
+                                    <div id="timeSlotsContainer" class="time-slots-grid"></div>
+                                </div>
+
+                                <div class="form-navigation">
+                                    <button type="button" class="btn-prev" onclick="prevStep(3)"><i class="fas fa-arrow-left"></i> Indietro</button>
+                                    <button type="button" class="btn-next" onclick="nextStep(3)">Avanti <i class="fas fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Confirmation -->
+                            <div class="form-step" id="step4">
+                                <h3><span class="step-number">4</span> Conferma Prenotazione</h3>
+
+                                <div class="confirmation-summary">
+                                    <div class="summary-section">
+                                        <h4>Dati Personali</h4>
+                                        <div class="summary-item">
+                                            <span class="label">Nome:</span>
+                                            <span class="value" id="summaryNome">-</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Cognome:</span>
+                                            <span class="value" id="summaryCognome">-</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Email:</span>
+                                            <span class="value" id="summaryEmail">-</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Telefono:</span>
+                                            <span class="value" id="summaryTelefono">-</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Patente:</span>
+                                            <span class="value" id="summaryPatente">-</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="summary-section">
+                                        <h4>Moto Selezionata</h4>
+                                        <div class="summary-item">
+                                            <span class="label">Marca:</span>
+                                            <span class="value" id="summaryBrand">-</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Modello:</span>
+                                            <span class="value" id="summaryModel">-</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="summary-section">
+                                        <h4>Prenotazione</h4>
+                                        <div class="summary-item">
+                                            <span class="label">Data:</span>
+                                            <span class="value" id="summaryDate">-</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Orario:</span>
+                                            <span class="value" id="summaryTime">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="terms" name="terms" required>
+                                    <label for="terms">Accetto i <a href="#">Termini e Condizioni</a> <span class="required">*</span></label>
+                                </div>
+                                <span class="error" id="termsError"></span>
+
+                                <div class="form-navigation">
+                                    <button type="button" class="btn-prev" onclick="prevStep(4)"><i class="fas fa-arrow-left"></i> Indietro</button>
+                                    <button type="submit" class="btn-submit" id="submitBtn">Conferma Prenotazione <i class="fas fa-check"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="step-indicator">
+                                <span id="currentStep">1</span> / 4
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Company Info Card -->
+                    <div class="info-card">
+                        <h3>Moto Rossi</h3>
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="companyAddress">Via Nazionale 1, Roma</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-phone"></i>
+                            <span id="companyPhone">+39 1234567890</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-envelope"></i>
+                            <span id="companyEmail">info@motorossi.com</span>
+                        </div>
+                        <div class="info-divider"></div>
+                        <p class="info-highlight">Prova gratuitamente le nostre moto per 30 minuti!</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bookings Modal -->
+        <div id="bookingsModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Prenotazioni Test Ride</h2>
+                    <span class="close" id="closeBookingsModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="table-container">
+                        <table id="bookingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Moto</th>
+                                    <th>Data</th>
+                                    <th>Orario</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookingsTableBody"></tbody>
+                        </table>
+                        <div id="noBookings" class="no-data">Nessuna prenotazione disponibile</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="successModal" class="modal">
+            <div class="modal-content modal-success">
+                <span class="close" id="closeSuccessModal">&times;</span>
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Prenotazione Confermata!</h2>
+                <p>Il tuo test ride è stato prenotato con successo.</p>
+                <p id="successMessage"></p>
+                <p class="text-small">Riceverai una email di conferma con tutti i dettagli della prenotazione.</p>
+                <button id="closeSuccessBtn" class="btn-primary">Chiudi</button>
+            </div>
+        </div>
+
+        <!-- Error Modal -->
+        <div id="errorModal" class="modal">
+            <div class="modal-content modal-error">
+                <span class="close" id="closeErrorModal">&times;</span>
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h2>Errore!</h2>
+                <p id="errorMessage">Si è verificato un errore durante la prenotazione.</p>
+                <button id="closeErrorBtn" class="btn-primary">Chiudi</button>
+            </div>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="loader-container">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2025 Moto Rossi - Concessionaria Ufficiale. Tutti i diritti riservati.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
