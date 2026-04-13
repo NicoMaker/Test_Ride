@@ -1,1 +1,1 @@
-un solo evento per ogni moto per ogni mezz'ora un solo utente si salva in automatico anche socket.io
+un solo evento per ogni moto per ogni mezz'ora un solo utente si salva in automatico anche socket.io e a quel punto che si capisca che non è prenotabile
