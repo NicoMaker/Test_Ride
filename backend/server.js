@@ -209,7 +209,7 @@ app.post("/api/send-email", async (req, res) => {
       </tr>
       <tr>
         <td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;">Patente</td>
-        <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;">Categoria ${patente}</td>
+        <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;"> ${patente}</td>
       </tr>
     </table>
 
@@ -321,7 +321,7 @@ app.post("/api/send-email", async (req, res) => {
       </tr>
       <tr>
         <td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;">Patente</td>
-        <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;">Categoria ${patente}</td>
+        <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;"> ${patente}</td>
       </tr>
     </table>
 
