@@ -55,15 +55,6 @@ app.get('/api/motorcycles', (req, res) => {
   }
 });
 
-app.get('/api/motorcycle-categories', (req, res) => {
-  try {
-    const data = fs.readFileSync(path.join(__dirname, '../frontend', 'data', 'motorcycle-categories.json'), 'utf8');
-    res.json(JSON.parse(data));
-  } catch (error) {
-    res.status(500).json({ error: 'Errore caricamento categorie' });
-  }
-});
-
 // ==================== SEND EMAIL ====================
 
 app.post('/api/send-email', async (req, res) => {

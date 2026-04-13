@@ -57,10 +57,6 @@ async function loadAllData() {
     const motoRes = await fetch('motorcycles.json');
     state.motorcycles = await motoRes.json();
 
-    // Load categories from separate file
-    const catRes = await fetch('motorcycle-categories.json');
-    state.categories = await catRes.json();
-
     // Populate brands
     loadBrands();
 
@@ -310,11 +306,6 @@ function displayMotorcycleDetails(moto) {
   document.getElementById('detailPower').textContent = moto.power;
   document.getElementById('detailColor').textContent = moto.color;
   document.getElementById('detailYear').textContent = moto.year;
-
-  // Category description
-  const category = state.categories.find(c => c.id === moto.categoryId);
-  document.getElementById('detailDescription').textContent =
-    category ? `Categoria: ${category.name}` : '';
 
   // License compatibility based on kW
   const badge = document.getElementById('licenseBadge');
