@@ -68,6 +68,7 @@ app.post('/api/send-email', async (req, res) => {
       patente,
       motorcycleBrand,
       motorcycleModel,
+      motorcycleCategory,
       date,
       time,
       companyInfo
@@ -123,13 +124,14 @@ app.post('/api/send-email', async (req, res) => {
                   </tr>
                   <tr>
                     <td style="font-size:13px;color:#555;padding:6px 0;">Moto</td>
-                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">${motorcycleBrand} ${motorcycleModel}</td>
+                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">${motorcycleBrand} ${motorcycleModel} (${
+                      motorcycleCategory
+                    })</td>
                   </tr>
                   <tr>
                     <td style="font-size:13px;color:#555;padding:6px 0;">Durata</td>
                     <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">30 minuti</td>
                   </tr>
-
                   <tr>
                     <td style="font-size:13px;color:#555;padding:6px 0;">Patente</td>
                     <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">Categoria ${patente}</td>
@@ -162,10 +164,12 @@ app.post('/api/send-email', async (req, res) => {
       <!-- FOOTER -->
       <tr>
         <td style="background:#f4f1eb;padding:20px 40px;text-align:center;border-top:1px solid #e8dfc8;">
+        </td>
       </tr>
 
     </table>
-  </td></tr>
+  </td>
+</tr>
 </table>
 </body>
 </html>`;
@@ -212,7 +216,9 @@ app.post('/api/send-email', async (req, res) => {
             </tr>
             <tr style="background:#faf7f0;">
               <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Moto</td>
-              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${motorcycleBrand} ${motorcycleModel}</td>
+              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${motorcycleBrand} ${motorcycleModel} (${
+      motorcycleCategory
+    })</td>
             </tr>
           </table>
 
@@ -256,7 +262,8 @@ app.post('/api/send-email', async (req, res) => {
       </tr>
 
     </table>
-  </td></tr>
+  </td>
+</tr>
 </table>
 </body>
 </html>`;
@@ -318,7 +325,6 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'Errore del server', error: err.message });
 });
 
-// --- Nuovo blocco app.listen ---
 app.listen(PORT, "0.0.0.0", async () => {
   const localIP = getLocalIP();
   const publicIP = await getPublicIP();
@@ -330,5 +336,5 @@ app.listen(PORT, "0.0.0.0", async () => {
   console.log(`🌐 IP Pubblico: ${publicIP ? publicBaseUrl : "non disponibile"}`);
   console.log(`🏠 IP Locale: http://${localIP}:${PORT}`);
   console.log(`📍 Localhost: http://localhost:${PORT}`);
-  console.log(`📧 Server email pronto}`);
+  console.log(`📧 Server email pronto`);
 });

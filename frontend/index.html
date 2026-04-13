@@ -93,7 +93,7 @@
                     <i class="fas fa-id-card"></i>
                     <select id="patente" name="patente" required>
                       <option value="">Seleziona categoria...</option>
-                      <option value="A1">A1 (125cc)</option>
+                      <option value="A1">A1/B (125cc - Auto & Moto)</option>
                       <option value="A2">A2 (35kW)</option>
                       <option value="A">A (Illimitata)</option>
                     </select>
@@ -136,6 +136,10 @@
                 <div id="motorcycleDetails" class="motorcycle-details">
                   <div class="details-grid">
                     <div class="detail-item">
+                      <span class="detail-label">Categoria</span>
+                      <span class="detail-value" id="detailCategory">-</span>
+                    </div>
+                    <div class="detail-item">
                       <span class="detail-label">Cilindrata</span>
                       <span class="detail-value" id="detailCC">-</span>
                     </div>
@@ -152,7 +156,6 @@
                       <span class="detail-value" id="detailYear">-</span>
                     </div>
                   </div>
-                  <p id="detailDescription" class="detail-description"></p>
                   <div id="licenseBadge" class="license-badge" style="display:none"></div>
                 </div>
 
@@ -230,6 +233,10 @@
                     <div class="summary-item">
                       <span class="label">Modello:</span>
                       <span class="value" id="summaryModel">-</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="label">Categoria:</span>
+                      <span class="value" id="summaryCategory">-</span>
                     </div>
                   </div>
 

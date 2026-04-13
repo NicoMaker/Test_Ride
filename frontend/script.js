@@ -3,7 +3,6 @@ let state = {
   currentStep: 1,
   formData: {},
   motorcycles: [],
-  categories: [],
   companyInfo: {},
   bookings: []
 };
@@ -223,7 +222,7 @@ function updateFormView() {
 // Returns true if the moto is allowed for the selected patente
 function motoAllowedForPatente(moto) {
   const patente = document.getElementById('patente').value;
-  if (!patente) return true; // no license selected yet, show all
+  if (!patente) return true;
   if (patente === 'A') return true;
   if (patente === 'A2') return moto.kw <= 35;
   if (patente === 'A1') return moto.kw <= 11 && moto.cc <= 125;
@@ -236,7 +235,6 @@ function loadBrands() {
   const brands = [...new Set(allowed.map(m => m.brand))].sort();
   const brandSelect = document.getElementById('brand');
 
-  // Keep placeholder, remove old options
   brandSelect.innerHTML = '<option value="">Seleziona marca...</option>';
 
   if (brands.length === 0) {
@@ -277,9 +275,7 @@ function handleBrandChange() {
 }
 
 function handlePatenteChange() {
-  // Reload brands filtered by new patente
   loadBrands();
-  // Reset model selection and details
   document.getElementById('brand').value = '';
   document.getElementById('model').innerHTML = '<option value="">Seleziona modello...</option>';
   document.getElementById('motorcycleDetails').classList.remove('show');
@@ -295,6 +291,7 @@ function handleModelChange() {
     if (moto) {
       displayMotorcycleDetails(moto);
       state.formData.motorcycleId = modelId;
+      state.formData.motorcycleCategory = moto.category;
     }
   } else {
     document.getElementById('motorcycleDetails').classList.remove('show');
@@ -302,20 +299,16 @@ function handleModelChange() {
 }
 
 function displayMotorcycleDetails(moto) {
+  document.getElementById('detailCategory').textContent = moto.category || '-';
   document.getElementById('detailCC').textContent = moto.cc + ' cc';
   document.getElementById('detailPower').textContent = moto.power;
   document.getElementById('detailColor').textContent = moto.color;
   document.getElementById('detailYear').textContent = moto.year;
 
-  // License compatibility based on kW
   const badge = document.getElementById('licenseBadge');
   const patente = document.getElementById('patente').value;
   const kw = moto.kw;
 
-  // Italian license rules:
-  // A1: max 11 kW, max 125cc, max 0.1 kW/kg
-  // A2: max 35 kW, max 70 kW/kg ratio (not 2x unrestricted)
-  // A: unlimited
   let canRide = false;
   let reason = '';
 
@@ -333,13 +326,13 @@ function displayMotorcycleDetails(moto) {
   } else if (patente === 'A1') {
     if (kw <= 11 && moto.cc <= 125) {
       canRide = true;
-      reason = `${kw} kW ≤ 11 kW e ${moto.cc} cc ≤ 125 cc — rientra nel limite patente A1.`;
+      reason = `${kw} kW ≤ 11 kW e ${moto.cc} cc ≤ 125 cc — rientra nel limite patente A1/B.`;
     } else {
       canRide = false;
       const issues = [];
       if (kw > 11) issues.push(`${kw} kW supera il limite di 11 kW`);
       if (moto.cc > 125) issues.push(`${moto.cc} cc supera il limite di 125 cc`);
-      reason = issues.join(' e ') + ' per patente A1.';
+      reason = issues.join(' e ') + ' per patente A1/B.';
     }
   } else {
     badge.style.display = 'none';
@@ -347,7 +340,6 @@ function displayMotorcycleDetails(moto) {
     return;
   }
 
-  badge.style.display = 'flex';
 
   document.getElementById('motorcycleDetails').classList.add('show');
 }
@@ -365,13 +357,11 @@ function loadDates(daysAvailable) {
     const value = `${day.year}-${month}-${d}`;
     const label = `${day.day}/${day.month}/${day.year}`;
 
-    // Add to hidden select for validation
     const option = document.createElement('option');
     option.value = value;
     option.textContent = `${day.dayName} ${label}`;
     dateSelect.appendChild(option);
 
-    // Render clickable card
     const card = document.createElement('div');
     card.className = 'date-slot';
     card.dataset.value = value;
@@ -401,7 +391,6 @@ function loadTimeSlots(slots) {
   const timeSelect = document.getElementById('time');
   const container = document.getElementById('timeSlotsContainer');
 
-  // Populate select
   slots.forEach(slot => {
     const option = document.createElement('option');
     option.value = slot;
@@ -409,7 +398,6 @@ function loadTimeSlots(slots) {
     timeSelect.appendChild(option);
   });
 
-  // Populate clickable time slots grid
   container.innerHTML = '';
   slots.forEach(slot => {
     const btn = document.createElement('div');
@@ -429,7 +417,6 @@ function handleTimeChange() {
   const time = document.getElementById('time').value;
   if (time) {
     state.formData.selectedTime = time;
-    // Sync with visual slots
     document.querySelectorAll('.time-slot').forEach(s => {
       s.classList.toggle('selected', s.textContent === time);
     });
@@ -450,6 +437,7 @@ function updateSummary() {
 
   document.getElementById('summaryBrand').textContent = brand || '-';
   document.getElementById('summaryModel').textContent = moto ? moto.model : '-';
+  document.getElementById('summaryCategory').textContent = moto ? moto.category : '-';
 
   const dateSelect = document.getElementById('date');
   const dateText = dateSelect.options[dateSelect.selectedIndex]?.text || '-';
@@ -470,6 +458,8 @@ async function handleFormSubmit(e) {
 
   try {
     const modelSelect = document.getElementById('model');
+    const modelId = modelSelect.value;
+    const moto = state.motorcycles.find(m => m.id === modelId);
     const modelText = modelSelect.options[modelSelect.selectedIndex]?.text || '';
 
     const booking = {
@@ -479,14 +469,14 @@ async function handleFormSubmit(e) {
       time: state.formData.selectedTime,
       motorcycleBrand: document.getElementById('brand').value,
       motorcycleModel: modelText,
+      motorcycleCategory: moto ? moto.category : '',
       timestamp: new Date().toLocaleString('it-IT')
     };
 
     state.bookings.push(booking);
     localStorage.setItem('testRideBookings', JSON.stringify(state.bookings));
 
-    // Try to send email (non-blocking)
-    sendConfirmationEmail(booking).catch(err => console.warn('Email non inviata:', err));
+    await sendConfirmationEmail(booking);
 
     showLoader(false);
     showSuccessModal(booking);
@@ -502,7 +492,6 @@ async function sendConfirmationEmail(booking) {
   const emailData = {
     to: booking.email,
     cc: state.companyInfo.managers.map(m => m.email).join(', '),
-    subject: 'Conferma Test Ride - Palmino Motors',
     nome: booking.nome,
     cognome: booking.cognome,
     email: booking.email,
@@ -510,6 +499,7 @@ async function sendConfirmationEmail(booking) {
     patente: booking.patente,
     motorcycleBrand: booking.motorcycleBrand,
     motorcycleModel: booking.motorcycleModel,
+    motorcycleCategory: booking.motorcycleCategory,
     date: booking.date,
     time: booking.time,
     companyInfo: state.companyInfo.company
@@ -525,28 +515,19 @@ async function sendConfirmationEmail(booking) {
 }
 
 function resetForm() {
-  // Reset native form inputs
   document.getElementById('testRideForm').reset();
 
-  // Reset state
   state.currentStep = 1;
   state.formData = {};
 
-  // Reset motorcycle section
   document.getElementById('motorcycleDetails').classList.remove('show');
   document.getElementById('model').innerHTML = '<option value="">Seleziona modello...</option>';
   document.getElementById('licenseBadge').style.display = 'none';
 
-  // Reset visual time slots
   document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-
-  // Reset visual date slots
   document.querySelectorAll('.date-slot').forEach(s => s.classList.remove('selected'));
-
-  // Clear all error messages
   document.querySelectorAll('.error').forEach(el => el.textContent = '');
 
-  // Go back to step 1
   updateFormView();
 }
 
