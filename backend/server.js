@@ -326,20 +326,20 @@ app.post("/api/send-email", async (req, res) => {
     </table>
 
     <!-- SEDE AZIENDALE -->
-    <div style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin:0 0 10px;">Sede Aziendale</div>
+    <div style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin:0 0 10px;">Sede</div>
     <table style="width:100%;margin-bottom:28px;border-radius:12px;overflow:hidden;border:1px solid #e8dfc8;">
       <tr>
         <td style="padding:10px 16px;font-size:14px;color:#666;width:35%;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Indirizzo</td>
         <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;border-bottom:1px solid #e8dfc8;">${fullAddress}</td>
       </tr>
       <tr>
-        <td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Telefono sede</td>
+        <td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Telefono</td>
         <td style="padding:10px 16px;font-size:14px;background:#fff;border-bottom:1px solid #e8dfc8;">
           <a href="tel:${companyInfo.phone.replace(/\s/g,'')}" style="color:#b8860b;font-weight:bold;text-decoration:none;">${companyInfo.phone}</a>
         </td>
       </tr>
       <tr>
-        <td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Email sede</td>
+        <td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Email</td>
         <td style="padding:10px 16px;font-size:14px;background:#fff;border-bottom:1px solid #e8dfc8;">
           <a href="mailto:${companyInfo.email}" style="color:#b8860b;font-weight:bold;text-decoration:none;">${companyInfo.email}</a>
         </td>
