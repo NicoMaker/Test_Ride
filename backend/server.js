@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -39,7 +39,7 @@ transporter.verify((error) => {
 
 app.get('/api/company-info', (req, res) => {
   try {
-    const data = fs.readFileSync(path.join(__dirname, 'public', 'data', 'company-info.json'), 'utf8');
+    const data = fs.readFileSync(path.join(__dirname, '../frontend', 'data', 'company-info.json'), 'utf8');
     res.json(JSON.parse(data));
   } catch (error) {
     res.status(500).json({ error: 'Errore caricamento dati' });
@@ -48,7 +48,7 @@ app.get('/api/company-info', (req, res) => {
 
 app.get('/api/motorcycles', (req, res) => {
   try {
-    const data = fs.readFileSync(path.join(__dirname, 'public', 'data', 'motorcycles.json'), 'utf8');
+    const data = fs.readFileSync(path.join(__dirname, '../frontend', 'data', 'motorcycles.json'), 'utf8');
     res.json(JSON.parse(data));
   } catch (error) {
     res.status(500).json({ error: 'Errore caricamento moto' });
@@ -57,7 +57,7 @@ app.get('/api/motorcycles', (req, res) => {
 
 app.get('/api/motorcycle-categories', (req, res) => {
   try {
-    const data = fs.readFileSync(path.join(__dirname, 'public', 'data', 'motorcycle-categories.json'), 'utf8');
+    const data = fs.readFileSync(path.join(__dirname, '../frontend', 'data', 'motorcycle-categories.json'), 'utf8');
     res.json(JSON.parse(data));
   } catch (error) {
     res.status(500).json({ error: 'Errore caricamento categorie' });
@@ -137,6 +137,11 @@ app.post('/api/send-email', async (req, res) => {
                   <tr>
                     <td style="font-size:13px;color:#555;padding:6px 0;">Durata</td>
                     <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">30 minuti</td>
+                  </tr>
+
+                  <tr>
+                    <td style="font-size:13px;color:#555;padding:6px 0;">Patente</td>
+                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">Categoria ${patente}</td>
                   </tr>
                 </table>
               </td>
