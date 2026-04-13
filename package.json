@@ -1,12 +1,12 @@
 {
-  "name": "registration-system",
+  "name": "test-ride",
   "version": "1.0.0",
-  "description": "Sistema di registrazione con invio email tramite Nodemailer",
+  "description": "A simple registration system using Node.js, Express, and Nodemailer.",
   "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "nodemon server.js"
   },
   "keywords": [
     "registration",
@@ -25,6 +25,6 @@
     "nodemailer": "^6.9.7"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.1.14"
   }
 }
