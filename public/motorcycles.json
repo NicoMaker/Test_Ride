@@ -5,7 +5,8 @@
     "model": "Monster 937",
     "categoryId": "naked",
     "cc": 937,
-    "power": "111 CV",
+    "kw": 81,
+    "power": "111 CV / 81 kW",
     "color": "Rosso",
     "year": 2024
   },
@@ -15,7 +16,8 @@
     "model": "Panigale V4",
     "categoryId": "sportiva",
     "cc": 1103,
-    "power": "214 CV",
+    "kw": 157,
+    "power": "214 CV / 157 kW",
     "color": "Rosso",
     "year": 2024
   },
@@ -25,7 +27,8 @@
     "model": "Multistrada V4",
     "categoryId": "turismo",
     "cc": 1158,
-    "power": "170 CV",
+    "kw": 125,
+    "power": "170 CV / 125 kW",
     "color": "Blu",
     "year": 2024
   },
@@ -35,7 +38,8 @@
     "model": "YZF-R7",
     "categoryId": "sportiva",
     "cc": 689,
-    "power": "73 CV",
+    "kw": 54,
+    "power": "73 CV / 54 kW",
     "color": "Blu",
     "year": 2024
   },
@@ -45,7 +49,8 @@
     "model": "MT-09",
     "categoryId": "naked",
     "cc": 889,
-    "power": "119 CV",
+    "kw": 87,
+    "power": "119 CV / 87 kW",
     "color": "Nero",
     "year": 2024
   },
@@ -55,7 +60,8 @@
     "model": "TMAX 560",
     "categoryId": "scooter",
     "cc": 560,
-    "power": "48 CV",
+    "kw": 35,
+    "power": "48 CV / 35 kW",
     "color": "Bianco",
     "year": 2024
   },
@@ -65,7 +71,8 @@
     "model": "CB500F",
     "categoryId": "naked",
     "cc": 471,
-    "power": "48 CV",
+    "kw": 35,
+    "power": "48 CV / 35 kW",
     "color": "Rosso",
     "year": 2024
   },
@@ -75,7 +82,8 @@
     "model": "CBR1000RR",
     "categoryId": "sportiva",
     "cc": 999,
-    "power": "217 CV",
+    "kw": 160,
+    "power": "217 CV / 160 kW",
     "color": "Nero",
     "year": 2024
   },
@@ -85,7 +93,8 @@
     "model": "Ninja H2",
     "categoryId": "sportiva",
     "cc": 998,
-    "power": "231 CV",
+    "kw": 170,
+    "power": "231 CV / 170 kW",
     "color": "Verde",
     "year": 2024
   },
@@ -95,7 +104,8 @@
     "model": "Z900",
     "categoryId": "naked",
     "cc": 948,
-    "power": "125 CV",
+    "kw": 92,
+    "power": "125 CV / 92 kW",
     "color": "Verde",
     "year": 2024
   }

@@ -386,6 +386,49 @@ select {
   opacity: 0.9;
 }
 
+/* ==================== LICENSE BADGE ==================== */
+.license-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease;
+}
+
+.license-badge.compatible {
+  background: rgba(39, 174, 96, 0.18);
+  border: 1.5px solid rgba(39, 174, 96, 0.5);
+  color: #1a7a42;
+}
+
+.license-badge.incompatible {
+  background: rgba(192, 57, 43, 0.15);
+  border: 1.5px solid rgba(192, 57, 43, 0.4);
+  color: #922b21;
+}
+
+.license-badge i {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.license-badge .badge-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.license-badge .badge-text small {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+  opacity: 0.85;
+}
+
 @media (max-width: 768px) {
   .details-grid { grid-template-columns: repeat(2, 1fr); }
 }

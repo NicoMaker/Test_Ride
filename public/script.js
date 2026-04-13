@@ -82,6 +82,7 @@ function setupEventListeners() {
 
   document.getElementById('brand').addEventListener('change', handleBrandChange);
   document.getElementById('model').addEventListener('change', handleModelChange);
+  document.getElementById('patente').addEventListener('change', handlePatenteChange);
   document.getElementById('date').addEventListener('change', handleDateChange);
   document.getElementById('time').addEventListener('change', handleTimeChange);
 
@@ -223,9 +224,32 @@ function updateFormView() {
 }
 
 // ==================== MOTORCYCLES ====================
+// Returns true if the moto is allowed for the selected patente
+function motoAllowedForPatente(moto) {
+  const patente = document.getElementById('patente').value;
+  if (!patente) return true; // no license selected yet, show all
+  if (patente === 'A') return true;
+  if (patente === 'A2') return moto.kw <= 35;
+  if (patente === 'A1') return moto.kw <= 11 && moto.cc <= 125;
+  return true;
+}
+
 function loadBrands() {
-  const brands = [...new Set(state.motorcycles.map(m => m.brand))].sort();
+  const patente = document.getElementById('patente').value;
+  const allowed = state.motorcycles.filter(motoAllowedForPatente);
+  const brands = [...new Set(allowed.map(m => m.brand))].sort();
   const brandSelect = document.getElementById('brand');
+
+  // Keep placeholder, remove old options
+  brandSelect.innerHTML = '<option value="">Seleziona marca...</option>';
+
+  if (brands.length === 0) {
+    const opt = document.createElement('option');
+    opt.disabled = true;
+    opt.textContent = 'Nessuna moto disponibile per la tua patente';
+    brandSelect.appendChild(opt);
+    return;
+  }
 
   brands.forEach(brand => {
     const option = document.createElement('option');
@@ -244,7 +268,7 @@ function handleBrandChange() {
 
   if (brand) {
     const models = state.motorcycles
-      .filter(m => m.brand === brand)
+      .filter(m => m.brand === brand && motoAllowedForPatente(m))
       .sort((a, b) => a.model.localeCompare(b.model));
 
     models.forEach(moto => {
@@ -254,6 +278,17 @@ function handleBrandChange() {
       modelSelect.appendChild(option);
     });
   }
+}
+
+function handlePatenteChange() {
+  // Reload brands filtered by new patente
+  loadBrands();
+  // Reset model selection and details
+  document.getElementById('brand').value = '';
+  document.getElementById('model').innerHTML = '<option value="">Seleziona modello...</option>';
+  document.getElementById('motorcycleDetails').classList.remove('show');
+  document.getElementById('licenseBadge').style.display = 'none';
+  state.formData.motorcycleId = null;
 }
 
 function handleModelChange() {
@@ -276,10 +311,64 @@ function displayMotorcycleDetails(moto) {
   document.getElementById('detailColor').textContent = moto.color;
   document.getElementById('detailYear').textContent = moto.year;
 
-  // Look up category description
+  // Category description
   const category = state.categories.find(c => c.id === moto.categoryId);
   document.getElementById('detailDescription').textContent =
-    category ? `Categoria: ${category.name} – ${category.description}` : '';
+    category ? `Categoria: ${category.name}` : '';
+
+  // License compatibility based on kW
+  const badge = document.getElementById('licenseBadge');
+  const patente = document.getElementById('patente').value;
+  const kw = moto.kw;
+
+  // Italian license rules:
+  // A1: max 11 kW, max 125cc, max 0.1 kW/kg
+  // A2: max 35 kW, max 70 kW/kg ratio (not 2x unrestricted)
+  // A: unlimited
+  let canRide = false;
+  let reason = '';
+
+  if (patente === 'A') {
+    canRide = true;
+    reason = 'Patente A — nessun limite di potenza.';
+  } else if (patente === 'A2') {
+    if (kw <= 35) {
+      canRide = true;
+      reason = `${kw} kW ≤ 35 kW — rientra nel limite patente A2.`;
+    } else {
+      canRide = false;
+      reason = `${kw} kW supera il limite di 35 kW per patente A2.`;
+    }
+  } else if (patente === 'A1') {
+    if (kw <= 11 && moto.cc <= 125) {
+      canRide = true;
+      reason = `${kw} kW ≤ 11 kW e ${moto.cc} cc ≤ 125 cc — rientra nel limite patente A1.`;
+    } else {
+      canRide = false;
+      const issues = [];
+      if (kw > 11) issues.push(`${kw} kW supera il limite di 11 kW`);
+      if (moto.cc > 125) issues.push(`${moto.cc} cc supera il limite di 125 cc`);
+      reason = issues.join(' e ') + ' per patente A1.';
+    }
+  } else {
+    badge.style.display = 'none';
+    document.getElementById('motorcycleDetails').classList.add('show');
+    return;
+  }
+
+  badge.style.display = 'flex';
+  badge.className = `license-badge ${canRide ? 'compatible' : 'incompatible'}`;
+  badge.innerHTML = canRide
+    ? `<i class="fas fa-check-circle"></i>
+       <span class="badge-text">
+         Puoi guidare questa moto con la tua patente <strong>${patente}</strong>
+         <small>${reason}</small>
+       </span>`
+    : `<i class="fas fa-times-circle"></i>
+       <span class="badge-text">
+         Non puoi guidare questa moto con la tua patente <strong>${patente}</strong>
+         <small>${reason}</small>
+       </span>`;
 
   document.getElementById('motorcycleDetails').classList.add('show');
 }
@@ -457,12 +546,28 @@ async function sendConfirmationEmail(booking) {
 }
 
 function resetForm() {
+  // Reset native form inputs
   document.getElementById('testRideForm').reset();
+
+  // Reset state
   state.currentStep = 1;
   state.formData = {};
+
+  // Reset motorcycle section
   document.getElementById('motorcycleDetails').classList.remove('show');
   document.getElementById('model').innerHTML = '<option value="">Seleziona modello...</option>';
+  document.getElementById('licenseBadge').style.display = 'none';
+
+  // Reset visual time slots
   document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+
+  // Reset visual date slots
+  document.querySelectorAll('.date-slot').forEach(s => s.classList.remove('selected'));
+
+  // Clear all error messages
+  document.querySelectorAll('.error').forEach(el => el.textContent = '');
+
+  // Go back to step 1
   updateFormView();
 }
 
