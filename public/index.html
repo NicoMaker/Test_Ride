@@ -166,31 +166,24 @@
               <div class="form-step" id="step3">
                 <h3><span class="step-number">3</span> Data e Orario</h3>
 
+                <!-- Hidden selects for validation -->
+                <select id="date" name="date" required style="display:none">
+                  <option value="">Seleziona data...</option>
+                </select>
+                <select id="time" name="time" required style="display:none">
+                  <option value="">Seleziona orario...</option>
+                </select>
+
                 <div class="form-group">
-                  <label for="date">Data <span class="required">*</span></label>
-                  <div class="input-group">
-                    <i class="fas fa-calendar"></i>
-                    <select id="date" name="date" required>
-                      <option value="">Seleziona data...</option>
-                    </select>
-                  </div>
+                  <p class="time-slots-label">Data Disponibile:</p>
+                  <div id="dateSlotsContainer" class="date-slots-grid"></div>
                   <span class="error" id="dateError"></span>
                 </div>
 
-                <div class="form-group">
-                  <label for="time">Orario <span class="required">*</span></label>
-                  <div class="input-group">
-                    <i class="fas fa-clock"></i>
-                    <select id="time" name="time" required>
-                      <option value="">Seleziona orario...</option>
-                    </select>
-                  </div>
-                  <span class="error" id="timeError"></span>
-                </div>
-
-                <div class="time-slots">
+                <div class="form-group" style="margin-top:1.5rem">
                   <p class="time-slots-label">Orari Disponibili:</p>
                   <div id="timeSlotsContainer" class="time-slots-grid"></div>
+                  <span class="error" id="timeError"></span>
                 </div>
 
                 <div class="form-navigation">
@@ -279,18 +272,32 @@
           <div class="info-card">
             <h3>Palmino Motors</h3>
             <p class="info-subtitle">Hub Operativo</p>
-            <div class="info-item">
+
+            <a href="https://www.google.com/maps/search/?api=1&query=Via+Nazionale+1+Roma" target="_blank" class="info-item info-item-link" id="companyMapsLink">
               <i class="fas fa-map-marker-alt"></i>
-              <span id="companyAddress">Via Nazionale 1, Roma</span>
-            </div>
+              <span>
+                <span id="companyAddress">Via Nazionale 1, Roma</span>
+                <small class="info-link-hint">Apri in Google Maps</small>
+              </span>
+            </a>
+
             <div class="info-item">
               <i class="fas fa-phone"></i>
               <a href="tel:+391234567890" id="companyPhoneLink">+39 1234567890</a>
             </div>
+
             <div class="info-item">
               <i class="fas fa-envelope"></i>
               <a href="mailto:nicola.marano02@gmail.com" id="companyEmailLink">nicola.marano02@gmail.com</a>
             </div>
+
+            <div class="info-divider"></div>
+
+            <a href="https://wa.me/391234567890?text=Ciao%2C%20vorrei%20informazioni%20sul%20Test%20Ride!" target="_blank" class="whatsapp-btn" id="whatsappLink">
+              <i class="fab fa-whatsapp"></i>
+              Contatta su WhatsApp
+            </a>
+
             <div class="info-divider"></div>
             <p class="info-highlight">Prova gratuitamente le nostre moto per 30 minuti!</p>
           </div>

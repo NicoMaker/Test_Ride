@@ -6,7 +6,9 @@
     "city": "Roma",
     "cap": "20100",
     "email": "nicola.marano02@gmail.com",
-    "phone": "+39 1234567890"
+    "phone": "+39 1234567890",
+    "whatsapp": "391234567890",
+    "mapsUrl": "https://www.google.com/maps/search/?api=1&query=Via+Nazionale+1+Roma"
   },
   "managers": [
     {

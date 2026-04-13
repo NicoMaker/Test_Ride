@@ -35,6 +35,20 @@ async function loadAllData() {
     emailLink.href = `mailto:${companyData.company.email}`;
     emailLink.textContent = companyData.company.email;
 
+    // Maps link
+    if (companyData.company.mapsUrl) {
+      const mapsLink = document.getElementById('companyMapsLink');
+      if (mapsLink) mapsLink.href = companyData.company.mapsUrl;
+    }
+
+    // WhatsApp link
+    if (companyData.company.whatsapp) {
+      const waLink = document.getElementById('whatsappLink');
+      if (waLink) {
+        waLink.href = `https://wa.me/${companyData.company.whatsapp}?text=Ciao%2C%20vorrei%20informazioni%20sul%20Test%20Ride!`;
+      }
+    }
+
     // Load dates and time slots from company info
     loadDates(companyData.testRideSettings.daysAvailable);
     loadTimeSlots(companyData.testRideSettings.timeSlots);
@@ -105,6 +119,24 @@ function prevStep(currentStep) {
 }
 
 function validateStep(step) {
+  // Step 3 uses visual slot pickers, validate manually
+  if (step === 3) {
+    let isValid = true;
+    if (!document.getElementById('date').value) {
+      document.getElementById('dateError').textContent = 'Seleziona una data';
+      isValid = false;
+    } else {
+      document.getElementById('dateError').textContent = '';
+    }
+    if (!document.getElementById('time').value) {
+      document.getElementById('timeError').textContent = 'Seleziona un orario';
+      isValid = false;
+    } else {
+      document.getElementById('timeError').textContent = '';
+    }
+    return isValid;
+  }
+
   const inputs = document.getElementById(`step${step}`).querySelectorAll('[required]');
   let isValid = true;
 
@@ -255,16 +287,38 @@ function displayMotorcycleDetails(moto) {
 // ==================== DATES AND TIMES ====================
 function loadDates(daysAvailable) {
   const dateSelect = document.getElementById('date');
+  const container = document.getElementById('dateSlotsContainer');
 
   daysAvailable.forEach(day => {
-    if (day.available) {
-      const month = day.month.padStart(2, '0');
-      const d = day.day.padStart(2, '0');
-      const option = document.createElement('option');
-      option.value = `${day.year}-${month}-${d}`;
-      option.textContent = `${day.dayName} ${day.day}/${day.month}/${day.year}`;
-      dateSelect.appendChild(option);
-    }
+    if (!day.available) return;
+
+    const month = day.month.padStart(2, '0');
+    const d = day.day.padStart(2, '0');
+    const value = `${day.year}-${month}-${d}`;
+    const label = `${day.day}/${day.month}/${day.year}`;
+
+    // Add to hidden select for validation
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = `${day.dayName} ${label}`;
+    dateSelect.appendChild(option);
+
+    // Render clickable card
+    const card = document.createElement('div');
+    card.className = 'date-slot';
+    card.dataset.value = value;
+    card.innerHTML = `
+      <span class="slot-day-name">${day.dayName}</span>
+      <span class="slot-date">${label}</span>
+    `;
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.date-slot').forEach(s => s.classList.remove('selected'));
+      card.classList.add('selected');
+      dateSelect.value = value;
+      state.formData.selectedDate = value;
+      document.getElementById('dateError').textContent = '';
+    });
+    container.appendChild(card);
   });
 }
 
