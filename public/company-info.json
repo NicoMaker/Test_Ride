@@ -1,6 +1,7 @@
 {
   "company": {
-    "name": "Moto Rossi",
+    "name": "Palmino Motors",
+    "subtitle": "Hub Operativo",
     "address": "Via Nazionale 1",
     "city": "Roma",
     "cap": "20100",
@@ -16,17 +17,17 @@
   "testRideSettings": {
     "daysAvailable": [
       {
-        "day": "6",
+        "day": "8",
         "month": "5",
         "year": "2026",
-        "dayName": "Sabato",
+        "dayName": "Venerdì",
         "available": true
       },
       {
-        "day": "7",
-        "month": "6",
+        "day": "9",
+        "month": "5",
         "year": "2026",
-        "dayName": "Domenica",
+        "dayName": "Sabato",
         "available": true
       }
     ],
@@ -37,97 +38,5 @@
       "19:00", "19:30", "20:00"
     ],
     "durationMinutes": 30
-  },
-  "motorcycles": [
-    {
-      "id": "duc001",
-      "brand": "Ducati",
-      "model": "Monster 937",
-      "cc": 937,
-      "power": "111 CV",
-      "color": "Rosso",
-      "year": 2024
-    },
-    {
-      "id": "duc002",
-      "brand": "Ducati",
-      "model": "Panigale V4",
-      "cc": 1103,
-      "power": "214 CV",
-      "color": "Rosso",
-      "year": 2024
-    },
-    {
-      "id": "duc003",
-      "brand": "Ducati",
-      "model": "Multistrada V4",
-      "cc": 1158,
-      "power": "170 CV",
-      "color": "Blu",
-      "year": 2024
-    },
-    {
-      "id": "yam001",
-      "brand": "Yamaha",
-      "model": "YZF-R7",
-      "cc": 689,
-      "power": "73 CV",
-      "color": "Blu",
-      "year": 2024
-    },
-    {
-      "id": "yam002",
-      "brand": "Yamaha",
-      "model": "MT-09",
-      "cc": 889,
-      "power": "119 CV",
-      "color": "Nero",
-      "year": 2024
-    },
-    {
-      "id": "yam003",
-      "brand": "Yamaha",
-      "model": "TMAX 560",
-      "cc": 560,
-      "power": "48 CV",
-      "color": "Bianco",
-      "year": 2024
-    },
-    {
-      "id": "hon001",
-      "brand": "Honda",
-      "model": "CB500F",
-      "cc": 471,
-      "power": "48 CV",
-      "color": "Rosso",
-      "year": 2024
-    },
-    {
-      "id": "hon002",
-      "brand": "Honda",
-      "model": "CBR1000RR",
-      "cc": 999,
-      "power": "217 CV",
-      "color": "Nero",
-      "year": 2024
-    },
-    {
-      "id": "kaw001",
-      "brand": "Kawasaki",
-      "model": "Ninja H2",
-      "cc": 998,
-      "power": "231 CV",
-      "color": "Verde",
-      "year": 2024
-    },
-    {
-      "id": "kaw002",
-      "brand": "Kawasaki",
-      "model": "Z900",
-      "cc": 948,
-      "power": "125 CV",
-      "color": "Verde",
-      "year": 2024
-    }
-  ]
+  }
 }

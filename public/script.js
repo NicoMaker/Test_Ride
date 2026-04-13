@@ -3,76 +3,86 @@ let state = {
   currentStep: 1,
   formData: {},
   motorcycles: [],
-  companyInfo: {}
+  categories: [],
+  companyInfo: {},
+  bookings: []
 };
 
-// ==================== INIT ==================== 
+// ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadCompanyInfo();
+  await loadAllData();
   initializeForm();
   setupEventListeners();
-  loadBookings();
 });
 
-// ==================== LOAD COMPANY INFO ==================== 
-async function loadCompanyInfo() {
+// ==================== LOAD ALL DATA ====================
+async function loadAllData() {
   try {
-    const response = await fetch('company-info.json');
-    const data = await response.json();
-    state.companyInfo = data;
-    state.motorcycles = data.motorcycles;
-    
-    // Populate company info in UI
-    document.getElementById('companyAddress').textContent = 
-      `${data.company.address}, ${data.company.city}`;
-    document.getElementById('companyPhone').textContent = data.company.phone;
-    document.getElementById('companyEmail').textContent = data.company.email;
-    
-    // Load available dates
-    loadDates(data.testRideSettings.daysAvailable);
-    // Load brands
+    // Load company info
+    const companyRes = await fetch('company-info.json');
+    const companyData = await companyRes.json();
+    state.companyInfo = companyData;
+
+    // Update UI with company info
+    document.getElementById('companyAddress').textContent =
+      `${companyData.company.address}, ${companyData.company.city}`;
+
+    const phoneLink = document.getElementById('companyPhoneLink');
+    phoneLink.href = `tel:${companyData.company.phone.replace(/\s/g, '')}`;
+    phoneLink.textContent = companyData.company.phone;
+
+    const emailLink = document.getElementById('companyEmailLink');
+    emailLink.href = `mailto:${companyData.company.email}`;
+    emailLink.textContent = companyData.company.email;
+
+    // Load dates and time slots from company info
+    loadDates(companyData.testRideSettings.daysAvailable);
+    loadTimeSlots(companyData.testRideSettings.timeSlots);
+
+    // Load motorcycles from separate file
+    const motoRes = await fetch('motorcycles.json');
+    state.motorcycles = await motoRes.json();
+
+    // Load categories from separate file
+    const catRes = await fetch('motorcycle-categories.json');
+    state.categories = await catRes.json();
+
+    // Populate brands
     loadBrands();
-    // Load time slots
-    loadTimeSlots(data.testRideSettings.timeSlots);
+
   } catch (error) {
     console.error('Errore nel caricamento della configurazione:', error);
-    showError('Errore nel caricamento della configurazione');
+    showErrorModal('Errore nel caricamento della configurazione');
   }
 }
 
-// ==================== INITIALIZE FORM ==================== 
+// ==================== INITIALIZE FORM ====================
 function initializeForm() {
-  // Load bookings from localStorage
-  const savedBookings = localStorage.getItem('testRideBookings');
-  if (savedBookings) {
-    state.bookings = JSON.parse(savedBookings);
-  } else {
-    state.bookings = [];
-  }
+  const saved = localStorage.getItem('testRideBookings');
+  state.bookings = saved ? JSON.parse(saved) : [];
 }
 
-// ==================== SETUP EVENT LISTENERS ==================== 
+// ==================== SETUP EVENT LISTENERS ====================
 function setupEventListeners() {
-  // Form submission
   document.getElementById('testRideForm').addEventListener('submit', handleFormSubmit);
-  
-  // Brand and Model selection
+
   document.getElementById('brand').addEventListener('change', handleBrandChange);
   document.getElementById('model').addEventListener('change', handleModelChange);
-  
-  // Date and Time selection
   document.getElementById('date').addEventListener('change', handleDateChange);
   document.getElementById('time').addEventListener('change', handleTimeChange);
-  
-  // Modal controls
-  document.getElementById('viewBookingsBtn').addEventListener('click', showBookingsModal);
-  document.getElementById('closeBookingsModal').addEventListener('click', closeModal);
+
+  // Modal close buttons
+  document.getElementById('closeBookingsModal').addEventListener('click', () => {
+    document.getElementById('bookingsModal').classList.remove('show');
+  });
+
   document.getElementById('closeSuccessModal').addEventListener('click', closeSuccessModal);
-  document.getElementById('closeErrorModal').addEventListener('click', closeErrorModal);
   document.getElementById('closeSuccessBtn').addEventListener('click', closeSuccessModal);
+
+  document.getElementById('closeErrorModal').addEventListener('click', closeErrorModal);
   document.getElementById('closeErrorBtn').addEventListener('click', closeErrorModal);
-  
-  // Close modal when clicking outside
+
+  // Close modal clicking outside
   window.addEventListener('click', (e) => {
     if (e.target.classList.contains('modal')) {
       e.target.classList.remove('show');
@@ -80,7 +90,7 @@ function setupEventListeners() {
   });
 }
 
-// ==================== FORM STEPS ==================== 
+// ==================== FORM STEPS ====================
 function nextStep(currentStep) {
   if (validateStep(currentStep)) {
     saveStepData(currentStep);
@@ -97,13 +107,13 @@ function prevStep(currentStep) {
 function validateStep(step) {
   const inputs = document.getElementById(`step${step}`).querySelectorAll('[required]');
   let isValid = true;
-  
+
   inputs.forEach(input => {
     if (!validateInput(input)) {
       isValid = false;
     }
   });
-  
+
   return isValid;
 }
 
@@ -111,10 +121,10 @@ function validateInput(input) {
   const value = input.value.trim();
   const errorId = input.id + 'Error';
   const errorElement = document.getElementById(errorId);
-  
+
   let isValid = true;
   let errorMessage = '';
-  
+
   if (!value) {
     isValid = false;
     errorMessage = 'Questo campo è obbligatorio';
@@ -132,20 +142,14 @@ function validateInput(input) {
           errorMessage = 'Numero di telefono non valido';
         }
         break;
-      case 'text':
-        if (input.id === 'patente' && value.length < 2) {
-          isValid = false;
-          errorMessage = 'Patente non valida';
-        }
-        break;
     }
   }
-  
+
   if (errorElement) {
     errorElement.textContent = errorMessage;
-    input.classList.toggle('error', !isValid);
+    input.classList.toggle('error-field', !isValid);
   }
-  
+
   return isValid;
 }
 
@@ -174,30 +178,23 @@ function saveStepData(step) {
 }
 
 function updateFormView() {
-  // Hide all steps
-  document.querySelectorAll('.form-step').forEach(step => {
-    step.classList.remove('active');
-  });
-  
-  // Show current step
+  document.querySelectorAll('.form-step').forEach(step => step.classList.remove('active'));
   document.getElementById(`step${state.currentStep}`).classList.add('active');
-  
-  // Update progress bar
+
   const progress = (state.currentStep / 4) * 100;
   document.getElementById('progressFill').style.width = progress + '%';
   document.getElementById('currentStep').textContent = state.currentStep;
-  
-  // Update summary if on last step
+
   if (state.currentStep === 4) {
     updateSummary();
   }
 }
 
-// ==================== MOTORCYCLES HANDLING ==================== 
+// ==================== MOTORCYCLES ====================
 function loadBrands() {
   const brands = [...new Set(state.motorcycles.map(m => m.brand))].sort();
   const brandSelect = document.getElementById('brand');
-  
+
   brands.forEach(brand => {
     const option = document.createElement('option');
     option.value = brand;
@@ -209,15 +206,15 @@ function loadBrands() {
 function handleBrandChange() {
   const brand = document.getElementById('brand').value;
   const modelSelect = document.getElementById('model');
-  
-  // Clear models
+
   modelSelect.innerHTML = '<option value="">Seleziona modello...</option>';
-  
+  document.getElementById('motorcycleDetails').classList.remove('show');
+
   if (brand) {
     const models = state.motorcycles
       .filter(m => m.brand === brand)
       .sort((a, b) => a.model.localeCompare(b.model));
-    
+
     models.forEach(moto => {
       const option = document.createElement('option');
       option.value = moto.id;
@@ -229,37 +226,42 @@ function handleBrandChange() {
 
 function handleModelChange() {
   const modelId = document.getElementById('model').value;
-  
+
   if (modelId) {
     const moto = state.motorcycles.find(m => m.id === modelId);
     if (moto) {
       displayMotorcycleDetails(moto);
       state.formData.motorcycleId = modelId;
     }
+  } else {
+    document.getElementById('motorcycleDetails').classList.remove('show');
   }
 }
 
 function displayMotorcycleDetails(moto) {
-  const detailsContainer = document.getElementById('motorcycleDetails');
-  
   document.getElementById('detailCC').textContent = moto.cc + ' cc';
   document.getElementById('detailPower').textContent = moto.power;
   document.getElementById('detailColor').textContent = moto.color;
   document.getElementById('detailYear').textContent = moto.year;
-  document.getElementById('detailDescription').textContent = moto.description;
-  
-  detailsContainer.classList.add('show');
+
+  // Look up category description
+  const category = state.categories.find(c => c.id === moto.categoryId);
+  document.getElementById('detailDescription').textContent =
+    category ? `Categoria: ${category.name} – ${category.description}` : '';
+
+  document.getElementById('motorcycleDetails').classList.add('show');
 }
 
-// ==================== DATES AND TIMES ==================== 
+// ==================== DATES AND TIMES ====================
 function loadDates(daysAvailable) {
   const dateSelect = document.getElementById('date');
-  
+
   daysAvailable.forEach(day => {
     if (day.available) {
-      const date = new Date(`${day.year}-${day.month.padStart(2, '0')}-${day.day.padStart(2, '0')}`);
+      const month = day.month.padStart(2, '0');
+      const d = day.day.padStart(2, '0');
       const option = document.createElement('option');
-      option.value = date.toISOString().split('T')[0];
+      option.value = `${day.year}-${month}-${d}`;
       option.textContent = `${day.dayName} ${day.day}/${day.month}/${day.year}`;
       dateSelect.appendChild(option);
     }
@@ -275,12 +277,29 @@ function handleDateChange() {
 
 function loadTimeSlots(slots) {
   const timeSelect = document.getElementById('time');
-  
+  const container = document.getElementById('timeSlotsContainer');
+
+  // Populate select
   slots.forEach(slot => {
     const option = document.createElement('option');
     option.value = slot;
     option.textContent = slot;
     timeSelect.appendChild(option);
+  });
+
+  // Populate clickable time slots grid
+  container.innerHTML = '';
+  slots.forEach(slot => {
+    const btn = document.createElement('div');
+    btn.className = 'time-slot';
+    btn.textContent = slot;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('time').value = slot;
+      state.formData.selectedTime = slot;
+    });
+    container.appendChild(btn);
   });
 }
 
@@ -288,62 +307,65 @@ function handleTimeChange() {
   const time = document.getElementById('time').value;
   if (time) {
     state.formData.selectedTime = time;
+    // Sync with visual slots
+    document.querySelectorAll('.time-slot').forEach(s => {
+      s.classList.toggle('selected', s.textContent === time);
+    });
   }
 }
 
-// ==================== SUMMARY ==================== 
+// ==================== SUMMARY ====================
 function updateSummary() {
   document.getElementById('summaryNome').textContent = state.formData.nome || '-';
   document.getElementById('summaryCognome').textContent = state.formData.cognome || '-';
   document.getElementById('summaryEmail').textContent = state.formData.email || '-';
   document.getElementById('summaryTelefono').textContent = state.formData.telefono || '-';
   document.getElementById('summaryPatente').textContent = state.formData.patente || '-';
-  
+
   const brand = document.getElementById('brand').value;
   const modelId = state.formData.motorcycleId;
   const moto = state.motorcycles.find(m => m.id === modelId);
-  
+
   document.getElementById('summaryBrand').textContent = brand || '-';
   document.getElementById('summaryModel').textContent = moto ? moto.model : '-';
-  
-  const dateValue = document.getElementById('date').value;
-  const dateText = document.getElementById('date').options[document.getElementById('date').selectedIndex].text;
-  document.getElementById('summaryDate').textContent = dateText || '-';
-  
+
+  const dateSelect = document.getElementById('date');
+  const dateText = dateSelect.options[dateSelect.selectedIndex]?.text || '-';
+  document.getElementById('summaryDate').textContent = dateText;
   document.getElementById('summaryTime').textContent = state.formData.selectedTime || '-';
 }
 
-// ==================== FORM SUBMISSION ==================== 
+// ==================== FORM SUBMISSION ====================
 async function handleFormSubmit(e) {
   e.preventDefault();
-  
-  // Validate last step
+
   if (!document.getElementById('terms').checked) {
     document.getElementById('termsError').textContent = 'Devi accettare i termini e le condizioni';
     return;
   }
-  
+
   showLoader(true);
-  
+
   try {
-    // Save booking
+    const modelSelect = document.getElementById('model');
+    const modelText = modelSelect.options[modelSelect.selectedIndex]?.text || '';
+
     const booking = {
       id: Date.now(),
       ...state.formData,
       date: document.getElementById('date').value,
       time: state.formData.selectedTime,
       motorcycleBrand: document.getElementById('brand').value,
-      motorcycleModel: document.getElementById('model').options[document.getElementById('model').selectedIndex].text,
+      motorcycleModel: modelText,
       timestamp: new Date().toLocaleString('it-IT')
     };
-    
-    // Save to localStorage
+
     state.bookings.push(booking);
     localStorage.setItem('testRideBookings', JSON.stringify(state.bookings));
-    
-    // Send email
-    await sendConfirmationEmail(booking);
-    
+
+    // Try to send email (non-blocking)
+    sendConfirmationEmail(booking).catch(err => console.warn('Email non inviata:', err));
+
     showLoader(false);
     showSuccessModal(booking);
     resetForm();
@@ -355,38 +377,29 @@ async function handleFormSubmit(e) {
 }
 
 async function sendConfirmationEmail(booking) {
-  try {
-    const emailData = {
-      to: booking.email,
-      cc: state.companyInfo.managers.map(m => m.email).join(', '),
-      subject: 'Conferma Test Ride - Moto Rossi',
-      nome: booking.nome,
-      cognome: booking.cognome,
-      email: booking.email,
-      telefono: booking.telefono,
-      patente: booking.patente,
-      motorcycleBrand: booking.motorcycleBrand,
-      motorcycleModel: booking.motorcycleModel,
-      date: booking.date,
-      time: booking.time,
-      companyInfo: state.companyInfo.company
-    };
-    
-    const response = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(emailData)
-    });
-    
-    if (!response.ok) {
-      throw new Error('Errore nell\'invio dell\'email');
-    }
-  } catch (error) {
-    console.error('Errore nell\'invio dell\'email:', error);
-    // Non bloccare la prenotazione se l'email fallisce
-  }
+  const emailData = {
+    to: booking.email,
+    cc: state.companyInfo.managers.map(m => m.email).join(', '),
+    subject: 'Conferma Test Ride - Palmino Motors',
+    nome: booking.nome,
+    cognome: booking.cognome,
+    email: booking.email,
+    telefono: booking.telefono,
+    patente: booking.patente,
+    motorcycleBrand: booking.motorcycleBrand,
+    motorcycleModel: booking.motorcycleModel,
+    date: booking.date,
+    time: booking.time,
+    companyInfo: state.companyInfo.company
+  };
+
+  const response = await fetch('/api/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(emailData)
+  });
+
+  if (!response.ok) throw new Error('Email non inviata');
 }
 
 function resetForm() {
@@ -395,68 +408,15 @@ function resetForm() {
   state.formData = {};
   document.getElementById('motorcycleDetails').classList.remove('show');
   document.getElementById('model').innerHTML = '<option value="">Seleziona modello...</option>';
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
   updateFormView();
 }
 
-// ==================== BOOKINGS MODAL ==================== 
-function showBookingsModal() {
-  const modal = document.getElementById('bookingsModal');
-  const tbody = document.getElementById('bookingsTableBody');
-  const noData = document.getElementById('noBookings');
-  
-  if (state.bookings && state.bookings.length > 0) {
-    tbody.innerHTML = '';
-    noData.style.display = 'none';
-    
-    state.bookings.forEach(booking => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${booking.nome} ${booking.cognome}</td>
-        <td>${booking.email}</td>
-        <td>${booking.motorcycleBrand} ${booking.motorcycleModel}</td>
-        <td>${formatDate(booking.date)}</td>
-        <td>${booking.time}</td>
-        <td>
-          <button class="delete-btn" onclick="deleteBooking(${booking.id})">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      `;
-      tbody.appendChild(row);
-    });
-  } else {
-    tbody.innerHTML = '';
-    noData.style.display = 'block';
-  }
-  
-  modal.classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('bookingsModal').classList.remove('show');
-}
-
-function deleteBooking(id) {
-  if (confirm('Sei sicuro di voler eliminare questa prenotazione?')) {
-    state.bookings = state.bookings.filter(b => b.id !== id);
-    localStorage.setItem('testRideBookings', JSON.stringify(state.bookings));
-    showBookingsModal();
-  }
-}
-
-function loadBookings() {
-  const saved = localStorage.getItem('testRideBookings');
-  if (saved) {
-    state.bookings = JSON.parse(saved);
-  }
-}
-
-// ==================== MODALS ==================== 
+// ==================== MODALS ====================
 function showSuccessModal(booking) {
-  const modal = document.getElementById('successModal');
-  document.getElementById('successMessage').textContent = 
+  document.getElementById('successMessage').textContent =
     `La tua prenotazione è confermata per ${formatDate(booking.date)} alle ${booking.time}`;
-  modal.classList.add('show');
+  document.getElementById('successModal').classList.add('show');
 }
 
 function closeSuccessModal() {
@@ -464,35 +424,25 @@ function closeSuccessModal() {
 }
 
 function showErrorModal(message) {
-  const modal = document.getElementById('errorModal');
   document.getElementById('errorMessage').textContent = message;
-  modal.classList.add('show');
+  document.getElementById('errorModal').classList.add('show');
 }
 
 function closeErrorModal() {
   document.getElementById('errorModal').classList.remove('show');
 }
 
-function showError(message) {
-  showErrorModal(message);
-}
-
 function showLoader(show) {
-  const loader = document.getElementById('loader');
-  if (show) {
-    loader.classList.add('show');
-  } else {
-    loader.classList.remove('show');
-  }
+  document.getElementById('loader').classList.toggle('show', show);
 }
 
-// ==================== UTILITIES ==================== 
+// ==================== UTILITIES ====================
 function formatDate(dateString) {
   const date = new Date(dateString + 'T00:00:00');
-  return date.toLocaleDateString('it-IT', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  return date.toLocaleDateString('it-IT', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
 }

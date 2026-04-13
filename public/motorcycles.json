@@ -1,0 +1,102 @@
+[
+  {
+    "id": "duc001",
+    "brand": "Ducati",
+    "model": "Monster 937",
+    "categoryId": "naked",
+    "cc": 937,
+    "power": "111 CV",
+    "color": "Rosso",
+    "year": 2024
+  },
+  {
+    "id": "duc002",
+    "brand": "Ducati",
+    "model": "Panigale V4",
+    "categoryId": "sportiva",
+    "cc": 1103,
+    "power": "214 CV",
+    "color": "Rosso",
+    "year": 2024
+  },
+  {
+    "id": "duc003",
+    "brand": "Ducati",
+    "model": "Multistrada V4",
+    "categoryId": "turismo",
+    "cc": 1158,
+    "power": "170 CV",
+    "color": "Blu",
+    "year": 2024
+  },
+  {
+    "id": "yam001",
+    "brand": "Yamaha",
+    "model": "YZF-R7",
+    "categoryId": "sportiva",
+    "cc": 689,
+    "power": "73 CV",
+    "color": "Blu",
+    "year": 2024
+  },
+  {
+    "id": "yam002",
+    "brand": "Yamaha",
+    "model": "MT-09",
+    "categoryId": "naked",
+    "cc": 889,
+    "power": "119 CV",
+    "color": "Nero",
+    "year": 2024
+  },
+  {
+    "id": "yam003",
+    "brand": "Yamaha",
+    "model": "TMAX 560",
+    "categoryId": "scooter",
+    "cc": 560,
+    "power": "48 CV",
+    "color": "Bianco",
+    "year": 2024
+  },
+  {
+    "id": "hon001",
+    "brand": "Honda",
+    "model": "CB500F",
+    "categoryId": "naked",
+    "cc": 471,
+    "power": "48 CV",
+    "color": "Rosso",
+    "year": 2024
+  },
+  {
+    "id": "hon002",
+    "brand": "Honda",
+    "model": "CBR1000RR",
+    "categoryId": "sportiva",
+    "cc": 999,
+    "power": "217 CV",
+    "color": "Nero",
+    "year": 2024
+  },
+  {
+    "id": "kaw001",
+    "brand": "Kawasaki",
+    "model": "Ninja H2",
+    "categoryId": "sportiva",
+    "cc": 998,
+    "power": "231 CV",
+    "color": "Verde",
+    "year": 2024
+  },
+  {
+    "id": "kaw002",
+    "brand": "Kawasaki",
+    "model": "Z900",
+    "categoryId": "naked",
+    "cc": 948,
+    "power": "125 CV",
+    "color": "Verde",
+    "year": 2024
+  }
+]
