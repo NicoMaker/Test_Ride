@@ -46,7 +46,7 @@ function padTwo(n) {
 // Poi usare: <img src="data:image/png;base64,${LOGO_BASE64}" ...>
 function getLogoTag(companyName) {
   // Tentiamo di caricare il logo dal filesystem; se non disponibile usiamo testo
-  const logoPath = path.join(__dirname, "../frontend/img/logo.png");
+  const logoPath = path.join(__dirname, "../frontend/img/Logo.png");
   try {
     if (fs.existsSync(logoPath)) {
       const logoB64 = fs.readFileSync(logoPath).toString("base64");
