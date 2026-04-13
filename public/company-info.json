@@ -19,17 +19,17 @@
   "testRideSettings": {
     "daysAvailable": [
       {
-        "day": "8",
-        "month": "5",
-        "year": "2026",
-        "dayName": "Venerdì",
-        "available": true
-      },
-      {
         "day": "9",
         "month": "5",
         "year": "2026",
         "dayName": "Sabato",
+        "available": true
+      },
+      {
+        "day": "10",
+        "month": "5",
+        "year": "2026",
+        "dayName": "Domenica",
         "available": true
       }
     ],

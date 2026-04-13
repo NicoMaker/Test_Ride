@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import fs from 'fs';
 
-// Configurazione ambiente
 dotenv.config();
 
 const app = express();
@@ -14,13 +14,11 @@ const PORT = process.env.PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Middleware
 app.use(cors());
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configurazione Nodemailer
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: parseInt(process.env.EMAIL_PORT),
@@ -31,23 +29,46 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Verifica configurazione email
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log('Errore configurazione email:', error);
-  } else {
-    console.log('Server email pronto');
+transporter.verify((error) => {
+  if (error) console.log('Errore configurazione email:', error);
+  else console.log('Server email pronto');
+});
+
+// ==================== ROUTES ====================
+
+app.get('/api/company-info', (req, res) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'public', 'data', 'company-info.json'), 'utf8');
+    res.json(JSON.parse(data));
+  } catch (error) {
+    res.status(500).json({ error: 'Errore caricamento dati' });
   }
 });
 
-// ==================== ROUTES ==================== 
+app.get('/api/motorcycles', (req, res) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'public', 'data', 'motorcycles.json'), 'utf8');
+    res.json(JSON.parse(data));
+  } catch (error) {
+    res.status(500).json({ error: 'Errore caricamento moto' });
+  }
+});
 
-// API per invio email test ride
+app.get('/api/motorcycle-categories', (req, res) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, 'public', 'data', 'motorcycle-categories.json'), 'utf8');
+    res.json(JSON.parse(data));
+  } catch (error) {
+    res.status(500).json({ error: 'Errore caricamento categorie' });
+  }
+});
+
+// ==================== SEND EMAIL ====================
+
 app.post('/api/send-email', async (req, res) => {
   try {
     const {
       to,
-      cc,
       nome,
       cognome,
       email,
@@ -60,7 +81,8 @@ app.post('/api/send-email', async (req, res) => {
       companyInfo
     } = req.body;
 
-    // Formatta data
+    const managerEmails = req.body.cc || '';
+
     const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('it-IT', {
       weekday: 'long',
       year: 'numeric',
@@ -68,157 +90,221 @@ app.post('/api/send-email', async (req, res) => {
       day: 'numeric'
     });
 
-    // HTML contenuto email
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
-        
-        <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #e74c3c;">
-          <h1 style="color: #e74c3c; margin: 0; font-size: 2rem;">Moto Rossi</h1>
-          <p style="color: #7f8c8d; margin: 5px 0 0 0; font-size: 0.9rem;">Concessionaria Ufficiale</p>
-        </div>
+    // ── EMAIL AL CLIENTE ──────────────────────────────────────────────────────
+    const clienteHtml = `
+<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f4f1eb;font-family:Georgia,serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f1eb;padding:40px 0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
 
-        <h2 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">Conferma Prenotazione Test Ride</h2>
-        
-        <p style="color: #2c3e50; font-size: 1rem;">Gentile <strong>${nome} ${cognome}</strong>,</p>
-        
-        <p style="color: #2c3e50; font-size: 1rem;">grazie per aver prenotato un test ride presso la nostra concessionaria! Di seguito troverai i dettagli della tua prenotazione:</p>
+      <!-- HEADER -->
+      <tr>
+        <td style="background:#1a1a2e;padding:32px 40px;text-align:center;border-bottom:3px solid #b8860b;">
+          <div style="font-family:Georgia,serif;font-size:26px;color:#d4af37;font-weight:bold;letter-spacing:1px;">Palmino Motors</div>
+          <div style="font-size:11px;color:#8a7a5a;letter-spacing:3px;text-transform:uppercase;margin-top:4px;">Hub Operativo</div>
+        </td>
+      </tr>
 
-        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #e74c3c;">
-          
-          <h3 style="color: #e74c3c; margin-top: 0; border-bottom: 1px solid #ecf0f1; padding-bottom: 10px;">Dati Prenotazione</h3>
-          
-          <table style="width: 100%; border-collapse: collapse;">
+      <!-- BODY -->
+      <tr>
+        <td style="padding:36px 40px;">
+
+          <p style="margin:0 0 8px;font-size:15px;color:#2c2c2c;">Gentile <strong>${nome} ${cognome}</strong>,</p>
+          <p style="margin:0 0 28px;font-size:14px;color:#666;line-height:1.6;">
+            la tua prenotazione per il test ride è confermata. Ti aspettiamo!
+          </p>
+
+          <!-- RIEPILOGO -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#faf7f0;border-radius:8px;border:1px solid #e8dfc8;margin-bottom:24px;">
             <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Data:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">${formattedDate}</td>
-            </tr>
-            <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Orario:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">${time}</td>
-            </tr>
-            <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Durata:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">30 minuti</td>
+              <td style="padding:20px 24px;border-bottom:1px solid #e8dfc8;">
+                <div style="font-size:10px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;font-weight:bold;">Dettagli Prenotazione</div>
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="font-size:13px;color:#555;padding:6px 0;width:40%;">Data</td>
+                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">${formattedDate}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:13px;color:#555;padding:6px 0;">Orario</td>
+                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">${time}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:13px;color:#555;padding:6px 0;">Moto</td>
+                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">${motorcycleBrand} ${motorcycleModel}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-size:13px;color:#555;padding:6px 0;">Durata</td>
+                    <td style="font-size:13px;color:#2c2c2c;font-weight:bold;padding:6px 0;">30 minuti</td>
+                  </tr>
+                </table>
+              </td>
             </tr>
           </table>
 
-          <h3 style="color: #e74c3c; margin-top: 20px; border-bottom: 1px solid #ecf0f1; padding-bottom: 10px;">Moto Selezionata</h3>
-          
-          <table style="width: 100%; border-collapse: collapse;">
+          <!-- NOTA -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#fffbf0;border-left:3px solid #b8860b;border-radius:4px;margin-bottom:28px;">
             <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Marca:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">${motorcycleBrand}</td>
-            </tr>
-            <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Modello:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">${motorcycleModel}</td>
+              <td style="padding:14px 18px;font-size:13px;color:#664d00;line-height:1.6;">
+                Presentati <strong>10 minuti prima</strong> con documento d'identità e patente di guida.
+              </td>
             </tr>
           </table>
 
-          <h3 style="color: #e74c3c; margin-top: 20px; border-bottom: 1px solid #ecf0f1; padding-bottom: 10px;">Tuoi Dati</h3>
-          
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Nome:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">${nome}</td>
+          <!-- CONTATTI -->
+          <p style="margin:0 0 6px;font-size:13px;color:#888;">Per informazioni o modifiche:</p>
+          <p style="margin:0;font-size:13px;color:#2c2c2c;">
+            📞 <a href="tel:${companyInfo.phone.replace(/\s/g,'')}" style="color:#b8860b;text-decoration:none;">${companyInfo.phone}</a>
+            &nbsp;&nbsp;
+            ✉️ <a href="mailto:${companyInfo.email}" style="color:#b8860b;text-decoration:none;">${companyInfo.email}</a>
+          </p>
+
+        </td>
+      </tr>
+
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#f4f1eb;padding:20px 40px;text-align:center;border-top:1px solid #e8dfc8;">
+          <p style="margin:0;font-size:11px;color:#aaa;">© 2026 Palmino Motors – Hub Operativo &nbsp;·&nbsp; Messaggio automatico</p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+
+    // ── EMAIL AL TITOLARE ─────────────────────────────────────────────────────
+    const titolareHtml = `
+<!DOCTYPE html>
+<html lang="it">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#1a1a2e;font-family:Georgia,serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#1a1a2e;padding:40px 0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+
+      <!-- HEADER -->
+      <tr>
+        <td style="background:#1a1a2e;padding:28px 40px;border-bottom:3px solid #b8860b;">
+          <div style="font-family:Georgia,serif;font-size:22px;color:#d4af37;font-weight:bold;">Palmino Motors</div>
+          <div style="font-size:11px;color:#8a7a5a;letter-spacing:3px;text-transform:uppercase;margin-top:3px;">Hub Operativo · Gestione Prenotazioni</div>
+        </td>
+      </tr>
+
+      <!-- ALERT BANNER -->
+      <tr>
+        <td style="background:#b8860b;padding:16px 40px;">
+          <div style="font-size:16px;color:#fff;font-weight:bold;letter-spacing:0.5px;">
+            🏍️ &nbsp;Nuova Prenotazione Test Ride
+          </div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:3px;">
+            Ricevuta il ${new Date().toLocaleString('it-IT', { dateStyle: 'full', timeStyle: 'short' })}
+          </div>
+        </td>
+      </tr>
+
+      <!-- BODY -->
+      <tr>
+        <td style="padding:32px 40px;">
+
+          <!-- PRENOTAZIONE -->
+          <div style="font-size:10px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin-bottom:12px;">Prenotazione</div>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr style="background:#faf7f0;">
+              <td style="padding:12px 16px;font-size:13px;color:#555;width:35%;border-bottom:1px solid #e8dfc8;">Data</td>
+              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${formattedDate}</td>
             </tr>
             <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Cognome:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">${cognome}</td>
+              <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Orario</td>
+              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${time}</td>
             </tr>
-            <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Email:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">${email}</td>
-            </tr>
-            <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50; border-bottom: 1px solid #ecf0f1;">Telefono:</td>
-              <td style="padding: 10px 0; color: #7f8c8d; border-bottom: 1px solid #ecf0f1;">${telefono}</td>
-            </tr>
-            <tr>
-              <td style="padding: 10px 0; font-weight: bold; color: #2c3e50;">Patente:</td>
-              <td style="padding: 10px 0; color: #7f8c8d;">Categoria ${patente}</td>
+            <tr style="background:#faf7f0;">
+              <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Moto</td>
+              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${motorcycleBrand} ${motorcycleModel}</td>
             </tr>
           </table>
 
-        </div>
+          <!-- CLIENTE -->
+          <div style="font-size:10px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin-bottom:12px;">Cliente</div>
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <tr style="background:#faf7f0;">
+              <td style="padding:12px 16px;font-size:13px;color:#555;width:35%;border-bottom:1px solid #e8dfc8;">Nome</td>
+              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;border-bottom:1px solid #e8dfc8;">${nome} ${cognome}</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Telefono</td>
+              <td style="padding:12px 16px;font-size:14px;border-bottom:1px solid #e8dfc8;">
+                <a href="tel:${telefono.replace(/\s/g,'')}" style="color:#b8860b;text-decoration:none;font-weight:bold;">${telefono}</a>
+              </td>
+            </tr>
+            <tr style="background:#faf7f0;">
+              <td style="padding:12px 16px;font-size:13px;color:#555;border-bottom:1px solid #e8dfc8;">Email</td>
+              <td style="padding:12px 16px;font-size:14px;border-bottom:1px solid #e8dfc8;">
+                <a href="mailto:${email}" style="color:#b8860b;text-decoration:none;font-weight:bold;">${email}</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:12px 16px;font-size:13px;color:#555;">Patente</td>
+              <td style="padding:12px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;">Categoria ${patente}</td>
+            </tr>
+          </table>
 
-        <div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 15px; border-radius: 4px; margin: 20px 0;">
-          <p style="color: #856404; margin: 0; font-weight: bold;">⚠️ Importante</p>
-          <p style="color: #856404; margin: 5px 0 0 0; font-size: 0.95rem;">
-            Ti preghiamo di presentarti 10 minuti prima dell'orario prenotato. 
-            Porta con te un documento di identità valido e la patente di guida.
-          </p>
-        </div>
+          <!-- AZIONE RAPIDA -->
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="padding-top:8px;">
+                <a href="tel:${telefono.replace(/\s/g,'')}" style="display:inline-block;background:#b8860b;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:bold;margin-right:8px;">
+                  Chiama Cliente
+                </a>
+                <a href="https://wa.me/${telefono.replace(/\D/g,'')}?text=Ciao%20${encodeURIComponent(nome)}%2C%20ho%20ricevuto%20la%20tua%20prenotazione%20per%20il%20test%20ride%20del%20${encodeURIComponent(formattedDate)}%20alle%20${time}!" style="display:inline-block;background:#25D366;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:bold;">
+                  WhatsApp
+                </a>
+              </td>
+            </tr>
+          </table>
 
-        <div style="background: #d4edda; border-left: 4px solid #27ae60; padding: 15px; border-radius: 4px; margin: 20px 0;">
-          <p style="color: #155724; margin: 0; font-weight: bold;">✓ Condizioni del Test Ride</p>
-          <ul style="color: #155724; margin: 10px 0 0 20px; font-size: 0.95rem;">
-            <li>Durata: 30 minuti gratuiti</li>
-            <li>Percorso: Guidato da un nostro esperto</li>
-            <li>Assicurazione: Coperta dalla nostra polizza</li>
-            <li>Casco e abbigliamento: Fornito dalla concessionaria</li>
-          </ul>
-        </div>
+        </td>
+      </tr>
 
-        <div style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
-          <h3 style="color: #2c3e50; margin-top: 0;">Informazioni Concessionaria</h3>
-          <p style="color: #7f8c8d; margin: 10px 0;">
-            <strong>${companyInfo.name}</strong><br/>
-            ${companyInfo.address}<br/>
-            ${companyInfo.cap} ${companyInfo.city} (${companyInfo.province})<br/>
-            <strong>Telefono:</strong> ${companyInfo.phone}<br/>
-            <strong>Email:</strong> ${companyInfo.email}
-          </p>
-        </div>
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#1a1a2e;padding:18px 40px;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#5a5a7a;">© 2026 Palmino Motors – Sistema di prenotazione automatico</p>
+        </td>
+      </tr>
 
-        <p style="color: #2c3e50; font-size: 0.95rem;">
-          Se hai domande o necessiti di modificare la prenotazione, non esitare a contattarci:
-        </p>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
 
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="tel:${companyInfo.phone.replace(/\s/g, '')}" style="background: #e74c3c; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block; margin-right: 10px;">Chiama</a>
-          <a href="mailto:${companyInfo.email}" style="background: #2c3e50; color: white; padding: 12px 30px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">Email</a>
-        </div>
-
-        <hr style="border: none; border-top: 2px solid #ecf0f1; margin: 30px 0;">
-
-        <div style="text-align: center; padding-top: 20px; border-top: 1px solid #ecf0f1;">
-          <p style="color: #7f8c8d; font-size: 0.85rem; margin: 0;">
-            &copy; 2025 Moto Rossi - Concessionaria Ufficiale. Tutti i diritti riservati.<br/>
-            Questo è un messaggio automatico, si prega di non rispondere.
-          </p>
-        </div>
-
-      </div>
-    `;
-
-    // Configura email
-    const mailOptions = {
-      from: `"Moto Rossi" <${process.env.EMAIL_USER}>`,
+    // Invia email al cliente
+    await transporter.sendMail({
+      from: `"Palmino Motors" <${process.env.EMAIL_USER}>`,
       to: to,
-      cc: cc || '',
-      subject: 'Conferma Prenotazione Test Ride - Moto Rossi',
-      html: htmlContent
-    };
-
-    // Invia email
-    const result = await transporter.sendMail(mailOptions);
-    
-    console.log(`Email inviata a ${to} (ID: ${result.messageId})`);
-
-    res.status(200).json({ 
-      success: true, 
-      message: 'Email inviata con successo',
-      messageId: result.messageId 
+      subject: `Conferma Test Ride – ${formattedDate} ore ${time}`,
+      html: clienteHtml
     });
+
+    // Invia email al titolare
+    await transporter.sendMail({
+      from: `"Palmino Motors" <${process.env.EMAIL_USER}>`,
+      to: managerEmails,
+      subject: `🏍️ Nuova prenotazione – ${nome} ${cognome} · ${formattedDate} ore ${time}`,
+      html: titolareHtml
+    });
+
+    console.log(`Email inviate per prenotazione di ${nome} ${cognome}`);
+    res.status(200).json({ success: true, message: 'Email inviate con successo' });
 
   } catch (error) {
-    console.error('Errore nell\'invio dell\'email:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Errore nell\'invio dell\'email', 
-      error: error.message 
-    });
+    console.error('Errore invio email:', error);
+    res.status(500).json({ success: false, message: 'Errore invio email', error: error.message });
   }
 });
 
@@ -227,18 +313,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'Server attivo e funzionante' });
 });
 
-// ==================== ERROR HANDLING ==================== 
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ 
-    success: false, 
-    message: 'Errore del server',
-    error: err.message 
-  });
+  res.status(500).json({ success: false, message: 'Errore del server', error: err.message });
 });
 
-// ==================== START SERVER ==================== 
 app.listen(PORT, () => {
-  console.log(`🏍️  Server Moto Rossi in esecuzione su http://localhost:${PORT}`);
-  console.log(`📧 Email configurato per: ${process.env.EMAIL_USER}`);
+  console.log(`🏍️  Palmino Motors in esecuzione su http://localhost:${PORT}`);
+  console.log(`📧 Email: ${process.env.EMAIL_USER}`);
 });

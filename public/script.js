@@ -357,18 +357,12 @@ function displayMotorcycleDetails(moto) {
   }
 
   badge.style.display = 'flex';
-  badge.className = `license-badge ${canRide ? 'compatible' : 'incompatible'}`;
-  badge.innerHTML = canRide
-    ? `<i class="fas fa-check-circle"></i>
-       <span class="badge-text">
-         Puoi guidare questa moto con la tua patente <strong>${patente}</strong>
-         <small>${reason}</small>
-       </span>`
-    : `<i class="fas fa-times-circle"></i>
-       <span class="badge-text">
-         Non puoi guidare questa moto con la tua patente <strong>${patente}</strong>
-         <small>${reason}</small>
-       </span>`;
+  badge.className = `license-badge compatible`;
+  badge.innerHTML = `<i class="fas fa-check-circle"></i>
+     <span class="badge-text">
+       Compatibile con patente <strong>${patente}</strong>
+       <small>${kw} kW${patente === 'A1' ? ` · ${moto.cc} cc` : ''}</small>
+     </span>`;
 
   document.getElementById('motorcycleDetails').classList.add('show');
 }
