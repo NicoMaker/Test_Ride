@@ -201,9 +201,6 @@ app.post('/api/send-email', async (req, res) => {
           <div style="font-size:16px;color:#fff;font-weight:bold;letter-spacing:0.5px;">
             🏍️ &nbsp;Nuova Prenotazione Test Ride
           </div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:3px;">
-            Ricevuta il ${new Date().toLocaleString('it-IT', { dateStyle: 'full', timeStyle: 'short' })}
-          </div>
         </td>
       </tr>
 
@@ -255,16 +252,6 @@ app.post('/api/send-email', async (req, res) => {
 
           <!-- AZIONE RAPIDA -->
           <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td align="center" style="padding-top:8px;">
-                <a href="tel:${telefono.replace(/\s/g,'')}" style="display:inline-block;background:#b8860b;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:bold;margin-right:8px;">
-                  Chiama Cliente
-                </a>
-                <a href="https://wa.me/${telefono.replace(/\D/g,'')}?text=Ciao%20${encodeURIComponent(nome)}%2C%20ho%20ricevuto%20la%20tua%20prenotazione%20per%20il%20test%20ride%20del%20${encodeURIComponent(formattedDate)}%20alle%20${time}!" style="display:inline-block;background:#25D366;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:bold;">
-                  WhatsApp
-                </a>
-              </td>
-            </tr>
           </table>
 
         </td>
