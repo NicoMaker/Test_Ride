@@ -25,11 +25,23 @@ function formatDateLabel(day, month, year) {
 }
 
 function makeDateKey(dateVal) {
-  return dateVal; // già "YYYY-MM-DD"
+  return dateVal;
 }
 
 function makeSlotKey(dateVal, motoId) {
   return `${dateVal}|${motoId}`;
+}
+
+/**
+ * Restituisce la data locale odierna nel formato "YYYY-MM-DD"
+ * senza dipendere dal fuso orario UTC.
+ */
+function getTodayLocal() {
+  const now = new Date();
+  const y   = now.getFullYear();
+  const m   = padTwo(now.getMonth() + 1);
+  const d   = padTwo(now.getDate());
+  return `${y}-${m}-${d}`;
 }
 
 // ==================== SOCKET.IO ====================
@@ -50,12 +62,11 @@ function initSocket() {
 
   // Il server invia lo stato completo degli slot occupati
   state.socket.on('slots_update', (data) => {
-    // data: { bookedSlots: { "YYYY-MM-DD|motoId": ["09:00", ...] } }
     state.bookedSlots = data.bookedSlots || {};
     refreshTimeSlotsUI();
   });
 
-  // Nuova prenotazione da un altro client
+  // Nuova prenotazione da un altro client: aggiorna slot in real-time
   state.socket.on('new_booking', (booking) => {
     const key = makeSlotKey(booking.date, booking.motorcycleId);
     if (!state.bookedSlots[key]) state.bookedSlots[key] = [];
@@ -63,8 +74,58 @@ function initSocket() {
       state.bookedSlots[key].push(booking.time);
     }
     refreshTimeSlotsUI();
-    showToast(`Slot ${booking.time} appena prenotato per ${booking.motorcycleBrand} ${booking.motorcycleModel}`, 'info');
+
+    // Avvisa solo se lo slot appena prenotato è quello che l'utente stava guardando
+    const currentDate  = document.getElementById('date').value;
+    const currentMoto  = state.formData.motorcycleId;
+    const selectedTime = document.getElementById('time').value;
+
+    if (
+      booking.date === currentDate &&
+      booking.motorcycleId === currentMoto
+    ) {
+      if (selectedTime === booking.time) {
+        // L'utente aveva già selezionato questo slot → costretto a cambiare
+        showConflictMessage(booking);
+      } else {
+        showToast(
+          `Slot ${booking.time} appena prenotato per ${booking.motorcycleBrand} ${booking.motorcycleModel}`,
+          'info'
+        );
+      }
+    }
   });
+}
+
+/**
+ * Mostra un messaggio modale chiaro quando lo slot selezionato
+ * viene prenotato da un altro utente mentre l'utente è in compilazione.
+ */
+function showConflictMessage(booking) {
+  // Deseleziona l'orario nel form
+  document.getElementById('time').value = '';
+  state.formData.selectedTime = '';
+  document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+
+  // Compila il modal di errore con messaggio specifico
+  const dateVal = booking.date;
+  const [y, m, d] = dateVal.split('-');
+  const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
+
+  document.getElementById('errorMessage').innerHTML =
+    `<strong>Orario non più disponibile</strong><br><br>` +
+    `Lo slot delle <strong>${booking.time}</strong> del <strong>${dateFormatted}</strong> ` +
+    `per la <strong>${booking.motorcycleBrand} ${booking.motorcycleModel}</strong> ` +
+    `è stato appena prenotato da un altro utente.<br><br>` +
+    `Per favore seleziona un orario diverso.`;
+
+  document.getElementById('errorModal').classList.add('show');
+
+  // Riporta l'utente allo step 3 se è al 4
+  if (state.currentStep === 4) {
+    state.currentStep = 3;
+    updateFormView();
+  }
 }
 
 function setSocketStatus(status) {
@@ -88,7 +149,6 @@ async function loadAllData() {
     state.motorcycles = await motoRes.json();
     loadBrands();
 
-    // Carica prenotazioni esistenti per slot bloccati
     const bookRes = await fetch('/api/bookings');
     if (bookRes.ok) {
       state.bookings = await bookRes.json();
@@ -105,12 +165,9 @@ function applyCompanyInfo(data) {
   const c = data.company;
   const settings = data.testRideSettings;
 
-  // Navbar / sidebar
   const name = c.name || 'Palmino Motors';
   document.getElementById('companyName').textContent = name;
-  document.getElementById('companySubtitle').textContent =
-    `${c.address} · ${c.city}`;
-
+  document.getElementById('companySubtitle').textContent = `${c.address} · ${c.city}`;
   document.getElementById('companyAddress').textContent =
     `${c.address}, ${c.city}${c.cap ? ' ' + c.cap : ''}`;
 
@@ -126,39 +183,32 @@ function applyCompanyInfo(data) {
   emailLink.href = `mailto:${c.email || ''}`;
   emailLink.textContent = c.email || '';
 
-  // P.IVA
   if (c.piva) {
     const pivaRow = document.getElementById('pivaRow');
     pivaRow.style.display = 'flex';
     document.getElementById('companyPiva').textContent = `P. IVA ${c.piva}`;
-
     const footerPiva = document.getElementById('footerPiva');
     footerPiva.style.display = 'block';
     footerPiva.textContent = `P. IVA ${c.piva}`;
   }
 
-  // WhatsApp
   if (c.whatsapp) {
     document.getElementById('whatsappLink').href =
       `https://wa.me/${c.whatsapp}?text=Ciao%2C%20vorrei%20informazioni%20sul%20Test%20Ride!`;
   }
 
-  // Durata
   if (settings && settings.durationMinutes) {
     document.getElementById('durationLabel').textContent = settings.durationMinutes;
   }
 
-  // Footer
   document.getElementById('footerText').textContent =
     `© 2026 ${name} · Tutti i diritti riservati`;
 
-  // Date disponibili
   if (settings && settings.daysAvailable) {
     loadDates(settings.daysAvailable, settings.defaultTimeSlots);
   }
 }
 
-// Ricostruisce bookedSlots da state.bookings
 function rebuildBookedSlots() {
   state.bookedSlots = {};
   state.bookings.forEach(b => {
@@ -289,7 +339,6 @@ function updateFormView() {
   document.getElementById('currentStep').textContent = state.currentStep;
 
   if (state.currentStep === 4) updateSummary();
-  // Aggiorna slot quando si torna allo step 3
   if (state.currentStep === 3) refreshTimeSlotsUI();
 }
 
@@ -344,7 +393,6 @@ function handleBrandChange() {
     });
   }
 
-  // Resetta slot se già selezionati
   refreshTimeSlotsUI();
 }
 
@@ -365,7 +413,6 @@ function handleModelChange() {
       displayMotorcycleDetails(moto);
       state.formData.motorcycleId = modelId;
       state.formData.motorcycleCategory = moto.category;
-      // Aggiorna slot occupati per questa moto
       refreshTimeSlotsUI();
     }
   } else {
@@ -410,7 +457,6 @@ function displayMotorcycleDetails(moto) {
     return;
   }
 
-
   document.getElementById('motorcycleDetails').classList.add('show');
 }
 
@@ -419,25 +465,52 @@ function displayMotorcycleDetails(moto) {
 // Mappa: dateValue => array timeSlots specifici per quel giorno
 let dateSlotsMap = {};
 
+/**
+ * Determina quale data selezionare automaticamente in base alla data odierna:
+ * - Se oggi è uguale o precedente al primo giorno disponibile → primo giorno
+ * - Se oggi è uguale o successivo all'ultimo giorno disponibile → ultimo giorno
+ * - Altrimenti → il primo giorno disponibile con data >= oggi
+ *
+ * In pratica:
+ * - Oggi ≤ 9 maggio → auto-seleziona il 9
+ * - Oggi = 10 maggio o oltre → auto-seleziona il 10
+ */
+function getAutoSelectDate(availableDates) {
+  if (!availableDates || availableDates.length === 0) return null;
+  const today = getTodayLocal();
+
+  // Cerca il primo giorno disponibile con data >= oggi
+  const future = availableDates.filter(d => d >= today);
+  if (future.length > 0) return future[0];
+
+  // Siamo oltre tutti i giorni: seleziona l'ultimo
+  return availableDates[availableDates.length - 1];
+}
+
 function loadDates(daysAvailable, defaultTimeSlots) {
   const dateSelect = document.getElementById('date');
   const container = document.getElementById('dateSlotsContainer');
   dateSlotsMap = {};
 
+  const availableDateValues = [];
+
   daysAvailable.forEach(day => {
     if (!day.available) return;
 
     const month = padTwo(day.month);
-    const d = padTwo(day.day);
+    const d     = padTwo(day.day);
     const value = `${day.year}-${month}-${d}`;
     const label = formatDateLabel(day.day, day.month, day.year);
 
-    // Orari: usa quelli custom del giorno o quelli di default
-    const slots = (day.timeSlots && day.timeSlots.length) ? day.timeSlots : (defaultTimeSlots || []);
+    const slots = (day.timeSlots && day.timeSlots.length)
+      ? day.timeSlots
+      : (defaultTimeSlots || []);
     dateSlotsMap[value] = slots;
 
+    availableDateValues.push(value);
+
     const option = document.createElement('option');
-    option.value = value;
+    option.value   = value;
     option.textContent = `${day.dayName} ${label}`;
     dateSelect.appendChild(option);
 
@@ -449,33 +522,51 @@ function loadDates(daysAvailable, defaultTimeSlots) {
       <span class="slot-date">${label}</span>`;
 
     card.addEventListener('click', () => {
-      document.querySelectorAll('.date-slot').forEach(s => s.classList.remove('selected'));
-      card.classList.add('selected');
-      dateSelect.value = value;
-      state.formData.selectedDate = value;
-      document.getElementById('dateError').textContent = '';
-      loadTimeSlotsForDate(value);
-
-      // Deseleziona orario precedente se non valido per nuovo giorno
-      const time = document.getElementById('time').value;
-      const slots = dateSlotsMap[value] || [];
-      if (!slots.includes(time)) {
-        document.getElementById('time').value = '';
-        state.formData.selectedTime = '';
-        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-      }
+      selectDateCard(value, card);
     });
 
     container.appendChild(card);
   });
+
+  // ── AUTO-SELEZIONE DATA ──────────────────────────────────────────────────────
+  const autoDate = getAutoSelectDate(availableDateValues);
+  if (autoDate) {
+    const autoCard = container.querySelector(`[data-value="${autoDate}"]`);
+    if (autoCard) selectDateCard(autoDate, autoCard, /* silent */ true);
+  }
+}
+
+/**
+ * Seleziona una data-card e carica gli orari corrispondenti.
+ * @param {string}  value   — "YYYY-MM-DD"
+ * @param {Element} card    — elemento DOM della card
+ * @param {boolean} silent  — se true, non mostra l'errore (auto-selezione)
+ */
+function selectDateCard(value, card, silent = false) {
+  document.querySelectorAll('.date-slot').forEach(s => s.classList.remove('selected'));
+  card.classList.add('selected');
+  document.getElementById('date').value = value;
+  state.formData.selectedDate = value;
+  if (!silent) document.getElementById('dateError').textContent = '';
+
+  loadTimeSlotsForDate(value);
+
+  // Deseleziona orario se non è valido per il nuovo giorno
+  const time  = document.getElementById('time').value;
+  const slots = dateSlotsMap[value] || [];
+  if (time && !slots.includes(time)) {
+    document.getElementById('time').value = '';
+    state.formData.selectedTime = '';
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+  }
 }
 
 function loadTimeSlotsForDate(dateVal) {
-  const slots = dateSlotsMap[dateVal] || [];
+  const slots      = dateSlotsMap[dateVal] || [];
   const timeSelect = document.getElementById('time');
-  const container = document.getElementById('timeSlotsContainer');
+  const container  = document.getElementById('timeSlotsContainer');
 
-  // Ricostruisce le opzioni del select hidden
+  // Ricostruisce il select hidden
   timeSelect.innerHTML = '<option value="">Seleziona orario...</option>';
   slots.forEach(slot => {
     const opt = document.createElement('option');
@@ -486,17 +577,18 @@ function loadTimeSlotsForDate(dateVal) {
   // Ricostruisce i pulsanti visivi
   container.innerHTML = '';
   const motoId = state.formData.motorcycleId;
-  const key = dateVal && motoId ? makeSlotKey(dateVal, motoId) : null;
+  const key    = dateVal && motoId ? makeSlotKey(dateVal, motoId) : null;
   const booked = key ? (state.bookedSlots[key] || []) : [];
 
   slots.forEach(slot => {
-    const btn = document.createElement('div');
+    const btn      = document.createElement('div');
     const isBooked = booked.includes(slot);
-    btn.className = 'time-slot' + (isBooked ? ' booked' : '');
+    btn.className  = 'time-slot' + (isBooked ? ' booked' : '');
     btn.textContent = slot;
     btn.dataset.slot = slot;
 
     if (!isBooked) {
+      btn._listenerAttached = true;
       btn.addEventListener('click', () => {
         document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
         btn.classList.add('selected');
@@ -510,7 +602,10 @@ function loadTimeSlotsForDate(dateVal) {
   });
 }
 
-// Aggiorna lo stato visivo degli slot senza ricostruire tutto
+/**
+ * Aggiorna lo stato visivo degli slot senza ricostruire tutto.
+ * Chiamato sia da Socket.io che quando cambia la moto selezionata.
+ */
 function refreshTimeSlotsUI() {
   const dateVal = document.getElementById('date').value;
   if (!dateVal) return;
@@ -518,27 +613,33 @@ function refreshTimeSlotsUI() {
   const motoId = state.formData.motorcycleId ||
     document.getElementById('model').value || null;
 
-  const key = motoId ? makeSlotKey(dateVal, motoId) : null;
+  const key    = motoId ? makeSlotKey(dateVal, motoId) : null;
   const booked = key ? (state.bookedSlots[key] || []) : [];
 
   const btns = document.querySelectorAll('#timeSlotsContainer .time-slot');
+
+  if (btns.length === 0 && dateVal) {
+    loadTimeSlotsForDate(dateVal);
+    return;
+  }
+
   btns.forEach(btn => {
     const slot = btn.dataset.slot;
     if (!slot) return;
 
     const wasSelected = btn.classList.contains('selected');
-    const isBooked = booked.includes(slot);
+    const isBooked    = booked.includes(slot);
 
     btn.classList.toggle('booked', isBooked);
 
     if (isBooked && wasSelected) {
+      // Slot selezionato dall'utente è appena diventato occupato
       btn.classList.remove('selected');
       document.getElementById('time').value = '';
       state.formData.selectedTime = '';
-      showToast(`L'orario ${slot} è stato appena prenotato da un altro utente`, 'warning');
+      // Il toast/modal viene già gestito da showConflictMessage nel listener 'new_booking'
     }
 
-    // Riaggiungi listener solo se non occupato e non già presente
     if (!isBooked && !btn._listenerAttached) {
       btn._listenerAttached = true;
       btn.addEventListener('click', () => {
@@ -550,11 +651,6 @@ function refreshTimeSlotsUI() {
       });
     }
   });
-
-  // Se non ci sono slot renderizzati ancora, caricali
-  if (btns.length === 0 && dateVal) {
-    loadTimeSlotsForDate(dateVal);
-  }
 }
 
 function handleDateChange() {
@@ -577,26 +673,26 @@ function handleTimeChange() {
 
 // ==================== SUMMARY ====================
 function updateSummary() {
-  document.getElementById('summaryNome').textContent    = state.formData.nome    || '-';
-  document.getElementById('summaryCognome').textContent = state.formData.cognome || '-';
-  document.getElementById('summaryEmail').textContent   = state.formData.email   || '-';
-  document.getElementById('summaryTelefono').textContent= state.formData.telefono|| '-';
-  document.getElementById('summaryPatente').textContent = state.formData.patente  || '-';
+  document.getElementById('summaryNome').textContent     = state.formData.nome     || '-';
+  document.getElementById('summaryCognome').textContent  = state.formData.cognome  || '-';
+  document.getElementById('summaryEmail').textContent    = state.formData.email    || '-';
+  document.getElementById('summaryTelefono').textContent = state.formData.telefono || '-';
+  document.getElementById('summaryPatente').textContent  = state.formData.patente  || '-';
 
   const modelId = state.formData.motorcycleId;
-  const moto = state.motorcycles.find(m => m.id === modelId);
+  const moto    = state.motorcycles.find(m => m.id === modelId);
 
-  document.getElementById('summaryBrand').textContent   = document.getElementById('brand').value || '-';
-  document.getElementById('summaryModel').textContent   = moto ? moto.model    : '-';
-  document.getElementById('summaryCategory').textContent= moto ? moto.category : '-';
+  document.getElementById('summaryBrand').textContent    = document.getElementById('brand').value || '-';
+  document.getElementById('summaryModel').textContent    = moto ? moto.model    : '-';
+  document.getElementById('summaryCategory').textContent = moto ? moto.category : '-';
 
   const dateVal = document.getElementById('date').value;
-  let dateText = '-';
+  let dateText  = '-';
   if (dateVal) {
     const [y, m, d] = dateVal.split('-');
-    const dateObj = new Date(dateVal + 'T00:00:00');
-    const dayName = dateObj.toLocaleDateString('it-IT', { weekday: 'long' });
-    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const dateObj   = new Date(dateVal + 'T00:00:00');
+    const dayName   = dateObj.toLocaleDateString('it-IT', { weekday: 'long' });
+    const cap       = s => s.charAt(0).toUpperCase() + s.slice(1);
     dateText = `${cap(dayName)} ${padTwo(d)}/${padTwo(m)}/${y}`;
   }
 
@@ -613,14 +709,30 @@ async function handleFormSubmit(e) {
     return;
   }
 
-  // Controlla che lo slot sia ancora libero prima di inviare
   const dateVal = document.getElementById('date').value;
   const time    = state.formData.selectedTime;
   const motoId  = state.formData.motorcycleId;
   const key     = makeSlotKey(dateVal, motoId);
 
+  // Controllo lato client prima di inviare
   if (state.bookedSlots[key] && state.bookedSlots[key].includes(time)) {
-    showToast('Questo slot è già stato prenotato. Seleziona un altro orario.', 'error');
+    const [y, m, d] = dateVal.split('-');
+    const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
+    const moto = state.motorcycles.find(mo => mo.id === motoId);
+    const motoName = moto ? `${moto.brand} ${moto.model}` : 'questa moto';
+
+    document.getElementById('errorMessage').innerHTML =
+      `<strong>Orario non disponibile</strong><br><br>` +
+      `Lo slot delle <strong>${time}</strong> del <strong>${dateFormatted}</strong> ` +
+      `per la <strong>${motoName}</strong> è già stato prenotato.<br><br>` +
+      `Per favore seleziona un orario diverso.`;
+
+    document.getElementById('errorModal').classList.add('show');
+
+    // Deseleziona l'orario e torna allo step 3
+    document.getElementById('time').value = '';
+    state.formData.selectedTime = '';
+    document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
     state.currentStep = 3;
     updateFormView();
     return;
@@ -630,23 +742,23 @@ async function handleFormSubmit(e) {
 
   try {
     const modelSelect = document.getElementById('model');
-    const moto = state.motorcycles.find(m => m.id === motoId);
-    const modelText = modelSelect.options[modelSelect.selectedIndex]?.text || '';
+    const moto        = state.motorcycles.find(m => m.id === motoId);
+    const modelText   = modelSelect.options[modelSelect.selectedIndex]?.text || '';
 
     const booking = {
-      id: Date.now().toString(),
-      nome:             state.formData.nome,
-      cognome:          state.formData.cognome,
-      email:            state.formData.email,
-      telefono:         state.formData.telefono,
-      patente:          state.formData.patente,
-      motorcycleId:     motoId,
-      motorcycleBrand:  document.getElementById('brand').value,
-      motorcycleModel:  modelText,
-      motorcycleCategory: moto ? moto.category : '',
-      date:             dateVal,
-      time:             time,
-      timestamp:        new Date().toLocaleString('it-IT')
+      id:                  Date.now().toString(),
+      nome:                state.formData.nome,
+      cognome:             state.formData.cognome,
+      email:               state.formData.email,
+      telefono:            state.formData.telefono,
+      patente:             state.formData.patente,
+      motorcycleId:        motoId,
+      motorcycleBrand:     document.getElementById('brand').value,
+      motorcycleModel:     modelText,
+      motorcycleCategory:  moto ? moto.category : '',
+      date:                dateVal,
+      time:                time,
+      timestamp:           new Date().toLocaleString('it-IT')
     };
 
     const response = await fetch('/api/bookings', {
@@ -658,7 +770,38 @@ async function handleFormSubmit(e) {
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.message || 'Errore prenotazione');
+      // Conflitto 409 dal server: qualcuno ha prenotato prima di noi
+      if (response.status === 409) {
+        const [y, m, d] = dateVal.split('-');
+        const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
+
+        document.getElementById('errorMessage').innerHTML =
+          `<strong>Orario non più disponibile</strong><br><br>` +
+          `Un altro utente ha prenotato lo slot delle <strong>${time}</strong> ` +
+          `del <strong>${dateFormatted}</strong> per la ` +
+          `<strong>${booking.motorcycleBrand} ${booking.motorcycleModel}</strong> ` +
+          `pochi istanti prima di te.<br><br>` +
+          `Per favore seleziona un orario diverso.`;
+
+        document.getElementById('errorModal').classList.add('show');
+
+        // Aggiorna immediatamente lo slot come occupato
+        if (!state.bookedSlots[key]) state.bookedSlots[key] = [];
+        if (!state.bookedSlots[key].includes(time)) state.bookedSlots[key].push(time);
+
+        document.getElementById('time').value = '';
+        state.formData.selectedTime = '';
+        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        refreshTimeSlotsUI();
+
+        state.currentStep = 3;
+        updateFormView();
+      } else {
+        throw new Error(result.message || 'Errore prenotazione');
+      }
+
+      showLoader(false);
+      return;
     }
 
     showLoader(false);
@@ -668,14 +811,16 @@ async function handleFormSubmit(e) {
   } catch (error) {
     showLoader(false);
     console.error('Errore nella prenotazione:', error);
-    showErrorModal(error.message || 'Errore durante la prenotazione. Riprovare.');
+    document.getElementById('errorMessage').innerHTML =
+      error.message || 'Errore durante la prenotazione. Riprovare.';
+    document.getElementById('errorModal').classList.add('show');
   }
 }
 
 function resetForm() {
   document.getElementById('testRideForm').reset();
   state.currentStep = 1;
-  state.formData = {};
+  state.formData    = {};
 
   document.getElementById('motorcycleDetails').classList.remove('show');
   document.getElementById('model').innerHTML = '<option value="">Seleziona modello...</option>';
@@ -686,12 +831,21 @@ function resetForm() {
   document.querySelectorAll('.error').forEach(el => el.textContent = '');
   document.getElementById('timeSlotsContainer').innerHTML = '';
 
+  // Ricarica le date con auto-selezione
+  const settings = state.companyInfo?.testRideSettings;
+  if (settings?.daysAvailable) {
+    document.getElementById('dateSlotsContainer').innerHTML = '';
+    document.getElementById('date').innerHTML = '<option value="">Seleziona data...</option>';
+    dateSlotsMap = {};
+    loadDates(settings.daysAvailable, settings.defaultTimeSlots);
+  }
+
   updateFormView();
 }
 
 // ==================== MODALS ====================
 function showSuccessModal(booking) {
-  const [y, m, d] = booking.date.split('-');
+  const [y, m, d]    = booking.date.split('-');
   const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
   document.getElementById('successMessage').textContent =
     `Prenotazione confermata per il ${dateFormatted} alle ${booking.time}`;
@@ -701,7 +855,7 @@ function showSuccessModal(booking) {
 function closeSuccessModal() { document.getElementById('successModal').classList.remove('show'); }
 
 function showErrorModal(message) {
-  document.getElementById('errorMessage').textContent = message;
+  document.getElementById('errorMessage').innerHTML = message;
   document.getElementById('errorModal').classList.add('show');
 }
 
@@ -712,10 +866,16 @@ function showLoader(show) { document.getElementById('loader').classList.toggle('
 // ==================== TOAST ====================
 function showToast(message, type = 'info', duration = 4000) {
   const container = document.getElementById('toastContainer');
-  const toast = document.createElement('div');
+  const toast     = document.createElement('div');
   toast.className = `toast toast-${type}`;
 
-  const icon = { info: 'fa-info-circle', success: 'fa-check-circle', warning: 'fa-exclamation-triangle', error: 'fa-times-circle' }[type] || 'fa-info-circle';
+  const icon = {
+    info:    'fa-info-circle',
+    success: 'fa-check-circle',
+    warning: 'fa-exclamation-triangle',
+    error:   'fa-times-circle'
+  }[type] || 'fa-info-circle';
+
   toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
   container.appendChild(toast);
 
