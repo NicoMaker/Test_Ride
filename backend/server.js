@@ -335,8 +335,8 @@ async function sendConfirmationEmails(booking, companyInfoData) {
   <!-- ── FOOTER ── -->
   <tr>
     <td style="background:#111111;padding:18px 36px;text-align:center;">
-      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#555555;letter-spacing:.5px;">
-        &copy; 2026 ${companyName}${pivaLine} &nbsp;·&nbsp; Tutti i diritti riservati
+      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#555555;letter-spacing:.5px;color: white;">
+              &copy; 2026 ${companyName}${pivaLine} &nbsp;·&nbsp; Tutti i diritti riservati
       </p>
     </td>
   </tr>
@@ -378,9 +378,6 @@ async function sendConfirmationEmails(booking, companyInfoData) {
           <td style="padding:22px 36px;">
             <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:900;color:#ffffff;letter-spacing:2px;text-transform:uppercase;">${companyName}</p>
             <p style="margin:3px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:8px;color:#777777;letter-spacing:3px;text-transform:uppercase;">Pannello Prenotazioni &middot; Admin</p>
-          </td>
-          <td style="padding:22px 36px 22px 0;text-align:right;vertical-align:middle;">
-            <span style="display:inline-block;background:#e63312;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:3px;">&#128691; Nuova</span>
           </td>
         </tr>
       </table>
@@ -470,9 +467,9 @@ async function sendConfirmationEmails(booking, companyInfoData) {
   <!-- ── FOOTER ── -->
   <tr>
     <td style="background:#111111;padding:16px 36px;text-align:center;">
-      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;letter-spacing:.5px;">
+    <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;letter-spacing:.5px;color: white;">
         &copy; 2026 ${companyName}${pivaLine} &nbsp;&middot;&nbsp; Sistema prenotazioni automatico
-      </p>
+    </p>
     </td>
   </tr>
 
