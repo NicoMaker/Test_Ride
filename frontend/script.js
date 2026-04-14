@@ -410,14 +410,6 @@ function displayMotorcycleDetails(moto) {
     return;
   }
 
-  badge.className = 'license-badge ' + (canRide ? 'compatible' : 'incompatible');
-  badge.style.display = 'flex';
-  badge.innerHTML = `
-    <i class="fas fa-${canRide ? 'check-circle' : 'times-circle'}"></i>
-    <span class="badge-text">
-      ${canRide ? 'Compatibile con la tua patente' : 'Non compatibile con la tua patente'}
-      <small>${reason}</small>
-    </span>`;
 
   document.getElementById('motorcycleDetails').classList.add('show');
 }
