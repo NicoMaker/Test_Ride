@@ -1,1 +1,1 @@
-un solo evento per ogni moto per ogni mezz'ora un solo utente si salva in automatico anche socket.io e a quel punto che si capisca che non è prenotabile
+un solo evento per ogni moto per ogni mezz'ora un solo utente si salva in automatico anche socket.io e a quel punto che si capisca che non è prenotabile e salva in u json i dati di configurazione dei dati i un json le moto e gli orari e che posso configurare anche dei giorni con orari diversi e infine impostasmi da tutte le parte aggiunta di P.Iva che in company-info 

@@ -16,10 +16,16 @@
     <!-- ==================== NAVBAR ==================== -->
     <nav class="navbar">
       <div class="logo-section">
-        <img src="img/logo.png" alt="Logo Palmino Motors" class="logo-img">
+        <img src="img/logo.png" alt="Logo Palmino Motors" class="logo-img" onerror="this.style.display='none'">
         <div class="brand-info">
           <h1>Palmino Motors</h1>
           <p>Concessionaria Ufficiale</p>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <div id="socketStatus" class="socket-status socket-connecting" title="Stato connessione real-time">
+          <span class="socket-dot"></span>
+          <span class="socket-label">Connessione…</span>
         </div>
       </div>
     </nav>
@@ -135,7 +141,6 @@
                   <span class="error" id="modelError"></span>
                 </div>
 
-                <!-- Dettagli moto (appare dopo selezione) -->
                 <div id="motorcycleDetails" class="motorcycle-details">
                   <div class="details-grid">
                     <div class="detail-item">
@@ -176,7 +181,6 @@
               <div class="form-step" id="step3">
                 <h3><span class="step-number">3</span> Data e Orario</h3>
 
-                <!-- Select nascosti usati per validazione/salvataggio -->
                 <select id="date" name="date" required style="display:none;">
                   <option value="">Seleziona data...</option>
                 </select>
@@ -191,7 +195,13 @@
                 </div>
 
                 <div class="form-group" style="margin-top:1.5rem;">
-                  <p class="time-slots-label">Scegli l'orario:</p>
+                  <p class="time-slots-label">
+                    Scegli l'orario:
+                    <span class="legend-row">
+                      <span class="legend-item"><span class="legend-dot available"></span>Disponibile</span>
+                      <span class="legend-item"><span class="legend-dot booked"></span>Occupato</span>
+                    </span>
+                  </p>
                   <div id="timeSlotsContainer" class="time-slots-grid"></div>
                   <span class="error" id="timeError"></span>
                 </div>
@@ -211,60 +221,26 @@
                 <h3><span class="step-number">4</span> Conferma Prenotazione</h3>
 
                 <div class="confirmation-summary">
-
                   <div class="summary-section">
                     <h4>Dati Personali</h4>
-                    <div class="summary-item">
-                      <span class="label">Nome</span>
-                      <span class="value" id="summaryNome">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="label">Cognome</span>
-                      <span class="value" id="summaryCognome">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="label">Email</span>
-                      <span class="value" id="summaryEmail">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="label">Telefono</span>
-                      <span class="value" id="summaryTelefono">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="label">Patente</span>
-                      <span class="value" id="summaryPatente">—</span>
-                    </div>
+                    <div class="summary-item"><span class="label">Nome</span><span class="value" id="summaryNome">—</span></div>
+                    <div class="summary-item"><span class="label">Cognome</span><span class="value" id="summaryCognome">—</span></div>
+                    <div class="summary-item"><span class="label">Email</span><span class="value" id="summaryEmail">—</span></div>
+                    <div class="summary-item"><span class="label">Telefono</span><span class="value" id="summaryTelefono">—</span></div>
+                    <div class="summary-item"><span class="label">Patente</span><span class="value" id="summaryPatente">—</span></div>
                   </div>
-
                   <div class="summary-section">
                     <h4>Moto Selezionata</h4>
-                    <div class="summary-item">
-                      <span class="label">Marca</span>
-                      <span class="value" id="summaryBrand">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="label">Modello</span>
-                      <span class="value" id="summaryModel">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="label">Categoria</span>
-                      <span class="value" id="summaryCategory">—</span>
-                    </div>
+                    <div class="summary-item"><span class="label">Marca</span><span class="value" id="summaryBrand">—</span></div>
+                    <div class="summary-item"><span class="label">Modello</span><span class="value" id="summaryModel">—</span></div>
+                    <div class="summary-item"><span class="label">Categoria</span><span class="value" id="summaryCategory">—</span></div>
                   </div>
-
                   <div class="summary-section">
                     <h4>Prenotazione</h4>
-                    <div class="summary-item">
-                      <span class="label">Data</span>
-                      <span class="value" id="summaryDate">—</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="label">Orario</span>
-                      <span class="value" id="summaryTime">—</span>
-                    </div>
+                    <div class="summary-item"><span class="label">Data</span><span class="value" id="summaryDate">—</span></div>
+                    <div class="summary-item"><span class="label">Orario</span><span class="value" id="summaryTime">—</span></div>
                   </div>
-
-                </div><!-- /confirmation-summary -->
+                </div>
 
                 <div class="checkbox-group">
                   <input type="checkbox" id="terms" name="terms" required>
@@ -296,12 +272,10 @@
 
           <!-- ===== INFO CARD (sidebar) ===== -->
           <aside class="info-card">
-            <h3>Palmino Motors</h3>
-            <p class="info-subtitle">Via Nazionale 1 · Roma</p>
+            <h3 id="companyName">Palmino Motors</h3>
+            <p class="info-subtitle" id="companySubtitle">Via Nazionale 1 · Roma</p>
 
-            <a href="https://www.google.com/maps/search/?api=1&query=Via+Nazionale+1+Roma"
-               target="_blank" rel="noopener"
-               class="info-item-link" id="companyMapsLink">
+            <a href="#" target="_blank" rel="noopener" class="info-item-link" id="companyMapsLink">
               <i class="fas fa-map-marker-alt"></i>
               <span>
                 <span id="companyAddress">Via Nazionale 1, Roma</span>
@@ -316,14 +290,17 @@
 
             <div class="info-item">
               <i class="fas fa-envelope"></i>
-              <a href="mailto:nicola.marano02@gmail.com" id="companyEmailLink">nicola.marano02@gmail.com</a>
+              <a href="mailto:info@palminomotors.it" id="companyEmailLink">info@palminomotors.it</a>
+            </div>
+
+            <div class="info-item" id="pivaRow" style="display:none;">
+              <i class="fas fa-receipt"></i>
+              <span id="companyPiva">—</span>
             </div>
 
             <div class="info-divider"></div>
 
-            <a href="https://wa.me/391234567890?text=Ciao%2C%20vorrei%20informazioni%20sul%20Test%20Ride!"
-               target="_blank" rel="noopener"
-               class="whatsapp-btn" id="whatsappLink">
+            <a href="#" target="_blank" rel="noopener" class="whatsapp-btn" id="whatsappLink">
               <i class="fab fa-whatsapp"></i>
               Contattaci su WhatsApp
             </a>
@@ -332,13 +309,13 @@
 
             <p class="info-highlight">
               <i class="fas fa-clock" style="margin-right:.4rem;"></i>
-              Prova gratuita di 30 minuti per ogni moto!
+              Prova gratuita di <span id="durationLabel">30</span> minuti per ogni moto!
             </p>
           </aside>
 
         </div><!-- /container -->
       </section>
-    </main><!-- /main-content -->
+    </main>
 
     <!-- ==================== MODAL: Lista Prenotazioni ==================== -->
     <div id="bookingsModal" class="modal">
@@ -376,9 +353,7 @@
       <div class="modal-content modal-success">
         <button class="close" id="closeSuccessModal" type="button" aria-label="Chiudi">&times;</button>
         <div class="inner-content">
-          <div class="success-icon">
-            <i class="fas fa-check-circle"></i>
-          </div>
+          <div class="success-icon"><i class="fas fa-check-circle"></i></div>
           <h2>Prenotazione Confermata!</h2>
           <p>Il tuo test ride è stato prenotato con successo.</p>
           <p id="successMessage" style="margin-top:.5rem;font-weight:600;color:var(--secondary);"></p>
@@ -393,9 +368,7 @@
       <div class="modal-content modal-error">
         <button class="close" id="closeErrorModal" type="button" aria-label="Chiudi">&times;</button>
         <div class="inner-content">
-          <div class="error-icon">
-            <i class="fas fa-exclamation-circle"></i>
-          </div>
+          <div class="error-icon"><i class="fas fa-exclamation-circle"></i></div>
           <h2>Si è verificato un errore</h2>
           <p id="errorMessage">Impossibile completare la prenotazione. Riprova o contattaci direttamente.</p>
           <button id="closeErrorBtn" class="btn-primary" type="button" style="margin-top:1.5rem;">Chiudi</button>
@@ -409,14 +382,19 @@
       <p class="loader-text">Invio in corso…</p>
     </div>
 
+    <!-- ==================== TOAST ==================== -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <!-- ==================== FOOTER ==================== -->
     <footer>
-      <p>&copy; 2026 Palmino Motors · Tutti i diritti riservati</p>
+      <p id="footerText">&copy; 2026 Palmino Motors · Tutti i diritti riservati</p>
+      <p id="footerPiva" style="display:none;font-size:.75rem;margin-top:2px;opacity:.7;"></p>
     </footer>
 
   </div><!-- /app-container -->
 
+  <!-- Socket.io (servito dal backend) -->
+  <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
-
 </html>
