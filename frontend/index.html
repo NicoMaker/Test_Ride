@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Test Ride – Palmino Motors</title>
   <meta name="description" content="Prenota il tuo test ride gratuito da Palmino Motors. Prova le migliori moto del mercato il 9 e 10 Maggio 2026.">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
@@ -109,7 +109,7 @@
                 </div>
 
                 <div class="form-navigation">
-                  <button type="button" class="btn-next" id="nextStep1Btn">
+                  <button type="button" class="btn-next" onclick="nextStep(1)">
                     Avanti <i class="fas fa-arrow-right"></i>
                   </button>
                 </div>
@@ -119,6 +119,7 @@
               <div class="form-step" id="step2">
                 <h3><span class="step-number">2</span> Seleziona la Moto</h3>
 
+                <!-- BARRA DI RICERCA UNIFICATA -->
                 <div class="search-container">
                   <div class="input-group search-input-group">
                     <i class="fas fa-search"></i>
@@ -129,15 +130,18 @@
                   </button>
                 </div>
 
+                <!-- FILTRI RAPIDI CATEGORIE -->
                 <div class="category-filters">
                   <span class="filter-label">Filtra per categoria:</span>
                   <div id="categoryChips" class="category-chips"></div>
                 </div>
 
+                <!-- RISULTATI MOTOCICLETTE (card grid) -->
                 <div class="motorcycles-grid" id="motorcyclesGrid">
                   <div class="loading-placeholder">Caricamento moto...</div>
                 </div>
 
+                <!-- Hidden selects per compatibilità backend -->
                 <div style="display: none;">
                   <select id="brand" name="brand">
                     <option value="">Seleziona marca...</option>
@@ -174,10 +178,10 @@
                 </div>
 
                 <div class="form-navigation">
-                  <button type="button" class="btn-prev" id="prevStep2Btn">
+                  <button type="button" class="btn-prev" onclick="prevStep(2)">
                     <i class="fas fa-arrow-left"></i> Indietro
                   </button>
-                  <button type="button" class="btn-next" id="nextStep2Btn" disabled>
+                  <button type="button" class="btn-next" id="nextStep2Btn" onclick="nextStep(2)" disabled>
                     Avanti <i class="fas fa-arrow-right"></i>
                   </button>
                 </div>
@@ -213,10 +217,10 @@
                 </div>
 
                 <div class="form-navigation">
-                  <button type="button" class="btn-prev" id="prevStep3Btn">
+                  <button type="button" class="btn-prev" onclick="prevStep(3)">
                     <i class="fas fa-arrow-left"></i> Indietro
                   </button>
-                  <button type="button" class="btn-next" id="nextStep3Btn">
+                  <button type="button" class="btn-next" onclick="nextStep(3)">
                     Avanti <i class="fas fa-arrow-right"></i>
                   </button>
                 </div>
@@ -258,7 +262,7 @@
                 <span class="error" id="termsError"></span>
 
                 <div class="form-navigation">
-                  <button type="button" class="btn-prev" id="prevStep4Btn">
+                  <button type="button" class="btn-prev" onclick="prevStep(4)">
                     <i class="fas fa-arrow-left"></i> Indietro
                   </button>
                   <button type="submit" class="btn-submit" id="submitBtn">
@@ -399,14 +403,9 @@
 
   </div><!-- /app-container -->
 
+  <!-- Socket.io (servito dal backend) -->
   <script src="/socket.io/socket.io.js"></script>
-  <script src="js/state.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/slots.js"></script>
-  <script src="js/motorcycles.js"></script>
-  <script src="js/form.js"></script>
-  <script src="js/app.js"></script>
+  <script src="script.js"></script>
 </body>
 
 </html>
