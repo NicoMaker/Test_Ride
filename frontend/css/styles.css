@@ -1429,3 +1429,7 @@ footer p + p {
     font-size: 2rem;
   }
 }
+
+#licenseBadge{
+  display: none;
+}
