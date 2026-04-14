@@ -125,13 +125,22 @@ app.post("/api/bookings", async (req, res) => {
         message: "Slot già prenotato per questa moto. Scegli un altro orario."
       });
 
-    booking.id        = Date.now().toString();
-    booking.timestamp = new Date().toLocaleString("it-IT");
-    bookings.push(booking);
+    // ── SALVA SOLO I DATI DI DISPONIBILITÀ (no dati personali) ──
+    const slotRecord = {
+      id:              Date.now().toString(),
+      date:            booking.date,
+      time:            booking.time,
+      motorcycleId:    booking.motorcycleId,
+      motorcycleBrand: booking.motorcycleBrand,
+      motorcycleModel: booking.motorcycleModel,
+      timestamp:       new Date().toLocaleString("it-IT")
+    };
+
+    bookings.push(slotRecord);
     writeJSON(BOOKINGS_FILE, bookings);
 
     io.emit("slots_update", { bookedSlots: buildBookedSlots(bookings) });
-    io.emit("new_booking", booking);
+    io.emit("new_booking", { ...slotRecord, nome: booking.nome, cognome: booking.cognome });
 
     if (companyInfo) {
       try { await sendConfirmationEmails(booking, companyInfo); }
