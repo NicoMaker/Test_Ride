@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Test Ride – Palmino Motors</title>
   <meta name="description" content="Prenota il tuo test ride gratuito da Palmino Motors. Prova le migliori moto del mercato il 9 e 10 Maggio 2026.">
   <link rel="stylesheet" href="styles.css">
@@ -115,33 +115,43 @@
                 </div>
               </div><!-- /step1 -->
 
-              <!-- STEP 2: Selezione Moto -->
+              <!-- STEP 2: Selezione Moto con RICERCA INTEGRATA -->
               <div class="form-step" id="step2">
                 <h3><span class="step-number">2</span> Seleziona la Moto</h3>
 
-                <div class="form-group">
-                  <label for="brand">Marca <span class="required">*</span></label>
-                  <div class="input-group">
-                    <i class="fas fa-motorcycle"></i>
-                    <select id="brand" name="brand" required>
-                      <option value="">Seleziona marca...</option>
-                    </select>
+                <!-- BARRA DI RICERCA UNIFICATA -->
+                <div class="search-container">
+                  <div class="input-group search-input-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="motorcycleSearch" placeholder="Cerca per marca, modello o categoria... (es. Ducati, Naked, Monster)">
                   </div>
-                  <span class="error" id="brandError"></span>
+                  <button type="button" id="clearSearchBtn" class="clear-search-btn" style="display: none;">
+                    <i class="fas fa-times"></i>
+                  </button>
                 </div>
 
-                <div class="form-group">
-                  <label for="model">Modello <span class="required">*</span></label>
-                  <div class="input-group">
-                    <i class="fas fa-cogs"></i>
-                    <select id="model" name="model" required>
-                      <option value="">Prima seleziona la marca...</option>
-                    </select>
-                  </div>
-                  <span class="error" id="modelError"></span>
+                <!-- FILTRI RAPIDI CATEGORIE -->
+                <div class="category-filters">
+                  <span class="filter-label">Filtra per categoria:</span>
+                  <div id="categoryChips" class="category-chips"></div>
                 </div>
 
-                <div id="motorcycleDetails" class="motorcycle-details">
+                <!-- RISULTATI MOTOCICLETTE (card grid) -->
+                <div class="motorcycles-grid" id="motorcyclesGrid">
+                  <div class="loading-placeholder">Caricamento moto...</div>
+                </div>
+
+                <!-- Hidden selects per compatibilità backend -->
+                <div style="display: none;">
+                  <select id="brand" name="brand">
+                    <option value="">Seleziona marca...</option>
+                  </select>
+                  <select id="model" name="model">
+                    <option value="">Seleziona modello...</option>
+                  </select>
+                </div>
+
+                <div id="motorcycleDetails" class="motorcycle-details" style="display: none;">
                   <div class="details-grid">
                     <div class="detail-item">
                       <span class="detail-label">Categoria</span>
@@ -171,7 +181,7 @@
                   <button type="button" class="btn-prev" onclick="prevStep(2)">
                     <i class="fas fa-arrow-left"></i> Indietro
                   </button>
-                  <button type="button" class="btn-next" onclick="nextStep(2)">
+                  <button type="button" class="btn-next" id="nextStep2Btn" onclick="nextStep(2)" disabled>
                     Avanti <i class="fas fa-arrow-right"></i>
                   </button>
                 </div>
@@ -397,4 +407,5 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>
