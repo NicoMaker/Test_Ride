@@ -21,10 +21,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Percorsi ai file dati
-const DATA_DIR    = path.join(__dirname, "../frontend/data");
-const COMPANY_FILE    = path.join(DATA_DIR, "company-info.json");
-const MOTORCYCLES_FILE= path.join(DATA_DIR, "motorcycles.json");
-const BOOKINGS_FILE   = path.join(DATA_DIR, "bookings.json");
+const DATA_DIR         = path.join(__dirname, "../frontend/data");
+const COMPANY_FILE     = path.join(DATA_DIR, "company-info.json");
+const MOTORCYCLES_FILE = path.join(DATA_DIR, "motorcycles.json");
+const BOOKINGS_FILE    = path.join(DATA_DIR, "bookings.json");
 
 // ==================== MIDDLEWARE ====================
 app.use(cors());
@@ -52,11 +52,8 @@ transporter.verify((error) => {
 function padTwo(n) { return String(n).padStart(2, "0"); }
 
 function readJSON(filePath) {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, "utf8"));
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(fs.readFileSync(filePath, "utf8")); }
+  catch { return null; }
 }
 
 function writeJSON(filePath, data) {
@@ -64,12 +61,9 @@ function writeJSON(filePath, data) {
 }
 
 function ensureBookingsFile() {
-  if (!fs.existsSync(BOOKINGS_FILE)) {
-    writeJSON(BOOKINGS_FILE, []);
-  }
+  if (!fs.existsSync(BOOKINGS_FILE)) writeJSON(BOOKINGS_FILE, []);
 }
 
-// Costruisce mappa slot occupati da un array di prenotazioni
 function buildBookedSlots(bookings) {
   const map = {};
   bookings.forEach(b => {
@@ -83,87 +77,68 @@ function buildBookedSlots(bookings) {
 // ==================== SOCKET.IO ====================
 io.on("connection", (socket) => {
   console.log(`🔌 Client connesso: ${socket.id}`);
-
-  // Invia stato corrente al nuovo client
   ensureBookingsFile();
   const bookings = readJSON(BOOKINGS_FILE) || [];
   socket.emit("slots_update", { bookedSlots: buildBookedSlots(bookings) });
-
-  socket.on("disconnect", () => {
-    console.log(`🔌 Client disconnesso: ${socket.id}`);
-  });
+  socket.on("disconnect", () => console.log(`🔌 Client disconnesso: ${socket.id}`));
 });
 
 // ==================== API ROUTES ====================
 
-// Company info
 app.get("/api/company-info", (req, res) => {
   const data = readJSON(COMPANY_FILE);
   if (!data) return res.status(500).json({ error: "Errore caricamento dati azienda" });
   res.json(data);
 });
 
-// Motorcycles
 app.get("/api/motorcycles", (req, res) => {
   const data = readJSON(MOTORCYCLES_FILE);
   if (!data) return res.status(500).json({ error: "Errore caricamento moto" });
   res.json(data);
 });
 
-// GET bookings
 app.get("/api/bookings", (req, res) => {
   ensureBookingsFile();
-  const bookings = readJSON(BOOKINGS_FILE) || [];
-  res.json(bookings);
+  res.json(readJSON(BOOKINGS_FILE) || []);
 });
 
-// POST booking (nuova prenotazione)
 app.post("/api/bookings", async (req, res) => {
   try {
     const { booking, companyInfo } = req.body;
 
-    if (!booking || !booking.date || !booking.time || !booking.motorcycleId) {
+    if (!booking || !booking.date || !booking.time || !booking.motorcycleId)
       return res.status(400).json({ success: false, message: "Dati prenotazione incompleti" });
-    }
 
     ensureBookingsFile();
     const bookings = readJSON(BOOKINGS_FILE) || [];
 
-    // ── CONTROLLO DISPONIBILITÀ (1 prenotazione per moto per slot) ──
+    // ── CONTROLLO DISPONIBILITÀ ──
     const conflict = bookings.find(b =>
       b.date === booking.date &&
       b.time === booking.time &&
       b.motorcycleId === booking.motorcycleId
     );
 
-    if (conflict) {
+    if (conflict)
       return res.status(409).json({
         success: false,
-        message: "Questo slot è già stato prenotato per la moto selezionata. Scegli un altro orario."
+        message: "Slot già prenotato per questa moto. Scegli un altro orario."
       });
-    }
 
-    // Salva prenotazione
-    booking.id = Date.now().toString();
+    booking.id        = Date.now().toString();
     booking.timestamp = new Date().toLocaleString("it-IT");
     bookings.push(booking);
     writeJSON(BOOKINGS_FILE, bookings);
 
-    // Notifica tutti i client via Socket.io
     io.emit("slots_update", { bookedSlots: buildBookedSlots(bookings) });
     io.emit("new_booking", booking);
 
-    // Invia email di conferma
     if (companyInfo) {
-      try {
-        await sendConfirmationEmails(booking, companyInfo);
-      } catch (emailErr) {
-        console.error("⚠️  Errore invio email:", emailErr.message);
-        // Non blocca la risposta: la prenotazione è salvata
-      }
+      try { await sendConfirmationEmails(booking, companyInfo); }
+      catch (e) { console.error("⚠️  Email non inviata:", e.message); }
     }
 
-    console.log(`✅ Nuova prenotazione: ${booking.nome} ${booking.cognome} — ${booking.motorcycleBrand} ${booking.motorcycleModel} — ${booking.date} ${booking.time}`);
+    console.log(`✅ Prenotazione: ${booking.nome} ${booking.cognome} — ${booking.motorcycleBrand} ${booking.motorcycleModel} — ${booking.date} ${booking.time}`);
     res.status(201).json({ success: true, booking });
 
   } catch (error) {
@@ -172,18 +147,14 @@ app.post("/api/bookings", async (req, res) => {
   }
 });
 
-// DELETE booking
 app.delete("/api/bookings/:id", (req, res) => {
   try {
     ensureBookingsFile();
     let bookings = readJSON(BOOKINGS_FILE) || [];
     const before = bookings.length;
     bookings = bookings.filter(b => b.id !== req.params.id);
-
-    if (bookings.length === before) {
+    if (bookings.length === before)
       return res.status(404).json({ success: false, message: "Prenotazione non trovata" });
-    }
-
     writeJSON(BOOKINGS_FILE, bookings);
     io.emit("slots_update", { bookedSlots: buildBookedSlots(bookings) });
     res.json({ success: true });
@@ -192,160 +163,336 @@ app.delete("/api/bookings/:id", (req, res) => {
   }
 });
 
-// Health check
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
-});
+app.get("/api/health", (req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
 
-// ==================== EMAIL ====================
+// ==================== EMAIL BUILDER ====================
+// Palette identità Palmino Motors: nero #111 · rosso #e63312 · bianco
+// Font: Arial/Helvetica (safe per email) con stile condensed/bold uppercase
 async function sendConfirmationEmails(booking, companyInfoData) {
-  const c = companyInfoData.company || companyInfoData;
+  const c        = companyInfoData.company || companyInfoData;
   const managers = companyInfoData.managers || [];
 
   const [yyyy, mm, dd] = booking.date.split("-");
-  const dateFormatted = `${padTwo(dd)}/${padTwo(mm)}/${yyyy}`;
-  const formattedDate = new Date(booking.date + "T00:00:00").toLocaleDateString("it-IT", {
+  const dateFormatted  = `${padTwo(dd)}/${padTwo(mm)}/${yyyy}`;
+  const formattedDate  = new Date(booking.date + "T00:00:00").toLocaleDateString("it-IT", {
     weekday: "long", year: "numeric", month: "long", day: "numeric"
   });
 
   const fullAddress = `${c.address}, ${c.city}${c.cap ? " " + c.cap : ""}`;
-  const mapsUrl = c.mapsUrl ||
+  const mapsUrl     = c.mapsUrl ||
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
-  const pivaLine = c.piva ? `<br>P. IVA ${c.piva}` : "";
+  const pivaLine    = c.piva ? `&nbsp;·&nbsp;P. IVA ${c.piva}` : "";
+  const companyName = c.name || "Palmino Motors";
 
-  const commonStyles = `body{margin:0;padding:0;background:#f5f0e8;font-family:Georgia,'Times New Roman',serif;}a{color:#b8860b;}`;
+  // ── STILI BASE ──────────────────────────────────────────────────────────────
+  // Inline CSS per massima compatibilità client email
+  const base = `
+    body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+    body{margin:0;padding:0;background:#f0f0f0;font-family:Arial,Helvetica,sans-serif}
+    table{border-collapse:collapse}
+    img{border:0;outline:none;text-decoration:none}
+    a{color:#e63312;text-decoration:none}
+  `;
 
-  // ── EMAIL CLIENTE ──────────────────────────────────────────────────────────
+  // ── EMAIL CLIENTE ────────────────────────────────────────────────────────────
   const clienteHtml = `<!DOCTYPE html>
 <html lang="it">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Conferma Test Ride</title><style>${commonStyles}</style></head>
-<body>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:40px 0;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Conferma Test Ride – ${companyName}</title>
+  <style>${base}</style>
+</head>
+<body style="margin:0;padding:0;background:#f0f0f0;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f0;padding:32px 0;">
 <tr><td align="center">
-<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08);">
-  <div style="background:linear-gradient(135deg,#1a1a2e 0%,#2a2a3e 100%);padding:32px 40px;text-align:center;border-bottom:3px solid #b8860b;">
-    <h1 style="font-family:Georgia,serif;font-size:26px;color:#d4af37;margin:0;letter-spacing:1px;">${c.name || "Palmino Motors"}</h1>
-    <p style="margin:4px 0 0;font-size:11px;color:#a09070;letter-spacing:2px;text-transform:uppercase;">Concessionaria Ufficiale</p>
-  </div>
-  <div style="padding:36px 40px;background:#fff;">
-    <p style="margin:0 0 6px;font-size:16px;color:#2c2c2c;">Gentile <strong style="color:#1a1a2e;">${booking.nome} ${booking.cognome}</strong>,</p>
-    <p style="margin:0 0 28px;font-size:14px;color:#555;line-height:1.6;">la tua prenotazione per il test ride è <strong>confermata</strong>. Ti aspettiamo!</p>
 
-    <div style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin:0 0 10px;">Dettagli Prenotazione</div>
-    <table style="width:100%;margin-bottom:24px;border-radius:12px;overflow:hidden;border:1px solid #e8dfc8;">
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;width:38%;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Data</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;border-bottom:1px solid #e8dfc8;">${formattedDate} (${dateFormatted})</td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Orario</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;border-bottom:1px solid #e8dfc8;">${booking.time}</td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Moto</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;border-bottom:1px solid #e8dfc8;">${booking.motorcycleBrand} ${booking.motorcycleModel}${booking.motorcycleCategory ? ` (${booking.motorcycleCategory})` : ""}</td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Durata</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;border-bottom:1px solid #e8dfc8;">30 minuti</td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;">Patente</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;">${booking.patente}</td></tr>
-    </table>
+<!-- WRAPPER -->
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.12);">
 
-    <div style="background:#fffbf0;border-left:3px solid #b8860b;border-radius:8px;padding:14px 18px;margin-bottom:28px;">
-      <p style="margin:0;font-size:13px;color:#664d00;line-height:1.6;">Presentati <strong>10 minuti prima</strong> con documento d'identità e patente di guida.</p>
-    </div>
+  <!-- ── HEADER ── -->
+  <tr>
+    <td style="background:#111111;padding:0;">
+      <!-- Striscia rossa top -->
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="height:4px;background:linear-gradient(90deg,#e63312,#ff4d2e);font-size:0;line-height:0;">&nbsp;</td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding:28px 36px;">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;color:#ffffff;letter-spacing:2px;text-transform:uppercase;">${companyName}</p>
+            <p style="margin:4px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#888888;letter-spacing:3px;text-transform:uppercase;">Concessionaria Ufficiale Moto</p>
+          </td>
+          <td style="padding:28px 36px 28px 0;text-align:right;vertical-align:middle;">
+            <span style="display:inline-block;background:#e63312;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 12px;border-radius:3px;">Test Ride</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
-    <div style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin:0 0 10px;">Dove Siamo</div>
-    <div style="border-radius:12px;overflow:hidden;border:1px solid #e8dfc8;margin-bottom:24px;">
-      <div style="padding:14px 18px;background:#faf7f0;">
-        <p style="margin:0 0 4px;font-size:14px;color:#1a1a2e;font-weight:bold;">📍 ${fullAddress}</p>
-        <p style="margin:0;font-size:12px;color:#888;"><a href="${mapsUrl}" target="_blank" style="color:#b8860b;text-decoration:none;font-weight:600;">Apri in Google Maps →</a></p>
-      </div>
-    </div>
-
-    <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8dfc8;">
-      <p style="margin:0 0 6px;font-size:13px;color:#888;">Per informazioni o modifiche:</p>
-      <p style="margin:0;font-size:13px;color:#2c2c2c;">
-        📞 <a href="tel:${(c.phone||"").replace(/\s/g,"")}" style="color:#b8860b;text-decoration:none;font-weight:500;">${c.phone || ""}</a>
-        &nbsp;|&nbsp;
-        ✉️ <a href="mailto:${c.email||""}" style="color:#b8860b;text-decoration:none;font-weight:500;">${c.email || ""}</a>
+  <!-- ── HERO BANNER ── -->
+  <tr>
+    <td style="background:#e63312;padding:22px 36px;text-align:center;">
+      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:19px;font-weight:900;color:#ffffff;letter-spacing:1px;text-transform:uppercase;">&#10003; Prenotazione Confermata!</p>
+      <p style="margin:6px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:rgba(255,255,255,0.85);letter-spacing:.5px;">
+        ${formattedDate} &nbsp;·&nbsp; ore ${booking.time}
       </p>
-    </div>
-  </div>
-  <div style="background:#f5f0e8;padding:18px 40px;text-align:center;border-top:1px solid #e8dfc8;">
-    <p style="margin:0;font-size:11px;color:#8a7a6a;">© 2026 ${c.name || "Palmino Motors"} · Tutti i diritti riservati${pivaLine}</p>
-  </div>
-</div>
+    </td>
+  </tr>
+
+  <!-- ── BODY ── -->
+  <tr>
+    <td style="padding:32px 36px;background:#ffffff;">
+
+      <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1a1a1a;">
+        Ciao <strong>${booking.nome} ${booking.cognome}</strong>,
+      </p>
+      <p style="margin:0 0 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#555555;line-height:1.65;">
+        la tua prenotazione per il test ride è stata <strong style="color:#1a1a1a;">confermata</strong>. Non vediamo l'ora di farti salire in sella!
+      </p>
+
+      <!-- Label sezione -->
+      <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;color:#e63312;letter-spacing:2.5px;text-transform:uppercase;border-bottom:2px solid #e63312;padding-bottom:6px;">Dettagli Prenotazione</p>
+
+      <!-- Tabella dettagli -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;border:1px solid #e8e8e8;border-radius:6px;overflow:hidden;">
+        <tr>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;width:32%;border-bottom:1px solid #e8e8e8;">Data</td>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;border-bottom:1px solid #e8e8e8;">${formattedDate}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">Orario</td>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#e63312;font-weight:900;letter-spacing:.5px;border-bottom:1px solid #e8e8e8;">${booking.time}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">Moto</td>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;border-bottom:1px solid #e8e8e8;">${booking.motorcycleBrand} ${booking.motorcycleModel}${booking.motorcycleCategory ? `<br><span style="font-size:11px;color:#888888;font-weight:400;">${booking.motorcycleCategory}</span>` : ""}</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">Durata</td>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;border-bottom:1px solid #e8e8e8;">30 minuti</td>
+        </tr>
+        <tr>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;">Patente</td>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;">Cat. ${booking.patente}</td>
+        </tr>
+      </table>
+
+      <!-- Alert presentarsi prima -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+        <tr>
+          <td style="background:#fff5f3;border-left:4px solid #e63312;border-radius:0 5px 5px 0;padding:13px 16px;">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;line-height:1.6;">
+              &#9888;&nbsp; Presentati <strong>10 minuti prima</strong> dell'orario con <strong>documento d'identità</strong> e <strong>patente di guida</strong>.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Dove siamo -->
+      <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;color:#e63312;letter-spacing:2.5px;text-transform:uppercase;border-bottom:2px solid #e63312;padding-bottom:6px;">Dove Siamo</p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;border:1px solid #e8e8e8;border-radius:6px;overflow:hidden;">
+        <tr>
+          <td style="padding:14px 16px;background:#f8f8f8;">
+            <p style="margin:0 0 3px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;">&#128205; ${fullAddress}</p>
+            <a href="${mapsUrl}" style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#e63312;font-weight:700;text-decoration:none;letter-spacing:.5px;text-transform:uppercase;">Apri in Google Maps &rarr;</a>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Contatti -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+        <tr>
+          <td style="padding-top:20px;border-top:1px solid #e8e8e8;">
+            <p style="margin:0 0 5px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;">Per informazioni o modifiche:</p>
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;">
+              &#128222;&nbsp;
+              <a href="tel:${(c.phone||"").replace(/\s/g,"")}" style="color:#1a1a1a;text-decoration:none;font-weight:700;">${c.phone || ""}</a>
+              &nbsp;&nbsp;&nbsp;
+              &#9993;&nbsp;
+              <a href="mailto:${c.email||""}" style="color:#e63312;text-decoration:none;font-weight:700;">${c.email || ""}</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+
+  <!-- ── FOOTER ── -->
+  <tr>
+    <td style="background:#111111;padding:18px 36px;text-align:center;">
+      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#555555;letter-spacing:.5px;">
+        &copy; 2026 ${companyName}${pivaLine} &nbsp;·&nbsp; Tutti i diritti riservati
+      </p>
+    </td>
+  </tr>
+
+</table>
+<!-- /WRAPPER -->
+
 </td></tr>
 </table>
-</body></html>`;
 
-  // ── EMAIL MANAGER ──────────────────────────────────────────────────────────
+</body>
+</html>`;
+
+  // ── EMAIL MANAGER ────────────────────────────────────────────────────────────
   const managerHtml = `<!DOCTYPE html>
 <html lang="it">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Nuova Prenotazione</title><style>${commonStyles}</style></head>
-<body>
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:40px 0;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Nuova Prenotazione – ${companyName}</title>
+  <style>${base}</style>
+</head>
+<body style="margin:0;padding:0;background:#f0f0f0;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f0;padding:32px 0;">
 <tr><td align="center">
-<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.12);">
-  <div style="background:linear-gradient(135deg,#1a1a2e 0%,#2a2a3e 100%);padding:28px 40px;text-align:center;border-bottom:3px solid #b8860b;">
-    <h1 style="font-family:Georgia,serif;font-size:22px;color:#d4af37;margin:0;">${c.name || "Palmino Motors"}</h1>
-    <p style="margin:4px 0 0;font-size:10px;color:#a09070;letter-spacing:2px;text-transform:uppercase;">Pannello Gestione Prenotazioni</p>
-  </div>
-  <div style="background:#b8860b;padding:14px 40px;text-align:center;">
-    <span style="font-size:15px;color:#fff;font-weight:bold;">🏍️ Nuova Prenotazione Test Ride</span>
-  </div>
-  <div style="padding:32px 40px;background:#fff;">
 
-    <div style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin:0 0 10px;">Prenotazione</div>
-    <table style="width:100%;margin-bottom:28px;border-radius:12px;overflow:hidden;border:1px solid #e8dfc8;">
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;width:35%;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Data</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;border-bottom:1px solid #e8dfc8;">${formattedDate} (${dateFormatted})</td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Orario</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;border-bottom:1px solid #e8dfc8;">${booking.time}</td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;">Moto</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;">${booking.motorcycleBrand} ${booking.motorcycleModel}${booking.motorcycleCategory ? ` (${booking.motorcycleCategory})` : ""}</td></tr>
-    </table>
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.12);">
 
-    <div style="font-size:11px;color:#b8860b;text-transform:uppercase;letter-spacing:2px;font-weight:bold;margin:0 0 10px;">Cliente</div>
-    <table style="width:100%;margin-bottom:28px;border-radius:12px;overflow:hidden;border:1px solid #e8dfc8;">
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;width:35%;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Nome</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;border-bottom:1px solid #e8dfc8;">${booking.nome} ${booking.cognome}</td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Telefono</td>
-          <td style="padding:10px 16px;font-size:14px;background:#fff;border-bottom:1px solid #e8dfc8;">
-            <a href="tel:${(booking.telefono||"").replace(/\s/g,"")}" style="color:#b8860b;font-weight:bold;text-decoration:none;">${booking.telefono}</a></td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;border-bottom:1px solid #e8dfc8;">Email</td>
-          <td style="padding:10px 16px;font-size:14px;background:#fff;border-bottom:1px solid #e8dfc8;">
-            <a href="mailto:${booking.email}" style="color:#b8860b;font-weight:bold;text-decoration:none;">${booking.email}</a></td></tr>
-      <tr><td style="padding:10px 16px;font-size:14px;color:#666;background:#faf7f0;">Patente</td>
-          <td style="padding:10px 16px;font-size:14px;color:#1a1a2e;font-weight:bold;background:#fff;">${booking.patente}</td></tr>
-    </table>
+  <!-- ── HEADER ── -->
+  <tr>
+    <td style="background:#111111;padding:0;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="height:4px;background:linear-gradient(90deg,#e63312,#ff4d2e);font-size:0;line-height:0;">&nbsp;</td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding:22px 36px;">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:900;color:#ffffff;letter-spacing:2px;text-transform:uppercase;">${companyName}</p>
+            <p style="margin:3px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:8px;color:#777777;letter-spacing:3px;text-transform:uppercase;">Pannello Prenotazioni &middot; Admin</p>
+          </td>
+          <td style="padding:22px 36px 22px 0;text-align:right;vertical-align:middle;">
+            <span style="display:inline-block;background:#e63312;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:3px;">&#128691; Nuova</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
 
-  </div>
-  <div style="background:#f5f0e8;padding:18px 40px;text-align:center;border-top:1px solid #e8dfc8;">
-    <p style="margin:0;font-size:11px;color:#8a7a6a;">© 2026 ${c.name || "Palmino Motors"} · Sistema automatico${pivaLine}</p>
-  </div>
-</div>
+  <!-- ── ALERT BANNER ── -->
+  <tr>
+    <td style="background:#1a1a1a;padding:16px 36px;border-bottom:2px solid #e63312;">
+      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#ffffff;text-transform:uppercase;letter-spacing:1px;">
+        &#128205; Nuova prenotazione ricevuta
+      </p>
+      <p style="margin:4px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#aaaaaa;">
+        ${formattedDate} &nbsp;&middot;&nbsp; ore <strong style="color:#e63312;">${booking.time}</strong>
+        &nbsp;&middot;&nbsp; ${booking.motorcycleBrand} ${booking.motorcycleModel}
+      </p>
+    </td>
+  </tr>
+
+  <!-- ── BODY ── -->
+  <tr>
+    <td style="padding:28px 36px;background:#ffffff;">
+
+      <!-- SEZIONE PRENOTAZIONE -->
+      <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;color:#e63312;letter-spacing:2.5px;text-transform:uppercase;border-bottom:2px solid #e63312;padding-bottom:6px;">Prenotazione</p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:22px;border:1px solid #e8e8e8;border-radius:6px;overflow:hidden;">
+        <tr>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;width:32%;border-bottom:1px solid #e8e8e8;">Data</td>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;border-bottom:1px solid #e8e8e8;">${formattedDate} (${dateFormatted})</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">Orario</td>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#e63312;font-weight:900;letter-spacing:1px;border-bottom:1px solid #e8e8e8;">${booking.time}</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;">Moto</td>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;">${booking.motorcycleBrand} ${booking.motorcycleModel}${booking.motorcycleCategory ? ` &mdash; <span style="font-weight:400;color:#777777;">${booking.motorcycleCategory}</span>` : ""}</td>
+        </tr>
+      </table>
+
+      <!-- SEZIONE CLIENTE -->
+      <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;color:#e63312;letter-spacing:2.5px;text-transform:uppercase;border-bottom:2px solid #e63312;padding-bottom:6px;">Cliente</p>
+
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:22px;border:1px solid #e8e8e8;border-radius:6px;overflow:hidden;">
+        <tr>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;width:32%;border-bottom:1px solid #e8e8e8;">Nome</td>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;border-bottom:1px solid #e8e8e8;">${booking.nome} ${booking.cognome}</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">Telefono</td>
+          <td style="padding:10px 16px;border-bottom:1px solid #e8e8e8;">
+            <a href="tel:${(booking.telefono||"").replace(/\s/g,"")}" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#e63312;font-weight:700;text-decoration:none;">${booking.telefono}</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">Email</td>
+          <td style="padding:10px 16px;border-bottom:1px solid #e8e8e8;">
+            <a href="mailto:${booking.email}" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#e63312;font-weight:700;text-decoration:none;">${booking.email}</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;">Patente</td>
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;">Categoria ${booking.patente}</td>
+        </tr>
+      </table>
+
+      <!-- CTA contatta cliente -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+        <tr>
+          <td align="center" style="padding:4px 0;">
+            <a href="tel:${(booking.telefono||"").replace(/\s/g,"")}"
+               style="display:inline-block;background:#e63312;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;padding:11px 24px;border-radius:4px;margin-right:8px;">
+              &#128222; Chiama
+            </a>
+            <a href="mailto:${booking.email}"
+               style="display:inline-block;background:#111111;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;padding:11px 24px;border-radius:4px;">
+              &#9993; Scrivi Email
+            </a>
+          </td>
+        </tr>
+      </table>
+
+    </td>
+  </tr>
+
+  <!-- ── FOOTER ── -->
+  <tr>
+    <td style="background:#111111;padding:16px 36px;text-align:center;">
+      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#555555;letter-spacing:.5px;">
+        &copy; 2026 ${companyName}${pivaLine} &nbsp;&middot;&nbsp; Sistema prenotazioni automatico
+      </p>
+    </td>
+  </tr>
+
+</table>
 </td></tr>
 </table>
-</body></html>`;
 
-  // Invia al cliente
+</body>
+</html>`;
+
+  // ── INVIO ────────────────────────────────────────────────────────────────────
   await transporter.sendMail({
-    from:    `"${c.name || "Palmino Motors"}" <${process.env.EMAIL_USER}>`,
+    from:    `"${companyName}" <${process.env.EMAIL_USER}>`,
     to:      booking.email,
-    subject: `Conferma Test Ride – ${dateFormatted} ore ${booking.time}`,
+    subject: `✓ Test Ride confermato – ${dateFormatted} ore ${booking.time} | ${companyName}`,
     html:    clienteHtml,
   });
 
-  // Invia ai manager
   const managerEmails = managers.map(m => m.email).filter(Boolean).join(", ");
   if (managerEmails) {
     await transporter.sendMail({
-      from:    `"${c.name || "Palmino Motors"}" <${process.env.EMAIL_USER}>`,
+      from:    `"${companyName}" <${process.env.EMAIL_USER}>`,
       to:      managerEmails,
-      subject: `🏍️ Nuova prenotazione – ${booking.nome} ${booking.cognome} · ${dateFormatted} ore ${booking.time}`,
+      subject: `[Test Ride] ${booking.nome} ${booking.cognome} · ${booking.motorcycleBrand} ${booking.motorcycleModel} · ${dateFormatted} ${booking.time}`,
       html:    managerHtml,
     });
   }
 
-  console.log(`📧 Email inviate: cliente=${booking.email}, manager=${managerEmails}`);
+  console.log(`📧 Email inviate → cliente: ${booking.email} | manager: ${managerEmails}`);
 }
 
 // ==================== START SERVER ====================
@@ -361,9 +508,8 @@ function getLocalIP() {
 
 async function getPublicIP() {
   try {
-    const response = await fetch("https://api.ipify.org?format=json");
-    const data = await response.json();
-    return data.ip;
+    const r = await fetch("https://api.ipify.org?format=json");
+    return (await r.json()).ip;
   } catch { return null; }
 }
 
@@ -375,10 +521,9 @@ app.use((err, req, res, next) => {
 httpServer.listen(PORT, "0.0.0.0", async () => {
   const localIP  = getLocalIP();
   const publicIP = await getPublicIP();
-
   console.log("✅  Server avviato con Socket.io");
-  console.log(`📍  Localhost:  http://localhost:${PORT}`);
-  console.log(`🏠  Rete locale: http://${localIP}:${PORT}`);
-  if (publicIP) console.log(`🌐  IP Pubblico: http://${publicIP}:${PORT}`);
+  console.log(`📍  Localhost:    http://localhost:${PORT}`);
+  console.log(`🏠  Rete locale:  http://${localIP}:${PORT}`);
+  if (publicIP) console.log(`🌐  IP Pubblico:  http://${publicIP}:${PORT}`);
   console.log(`📂  Prenotazioni: ${BOOKINGS_FILE}`);
 });
