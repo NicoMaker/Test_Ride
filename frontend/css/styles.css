@@ -1430,6 +1430,6 @@ footer p + p {
   }
 }
 
-.license-badge{
-  display: none;
+#licenseBadge{
+  display: none !important;
 }
