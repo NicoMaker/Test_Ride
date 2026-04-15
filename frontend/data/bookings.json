@@ -43,5 +43,14 @@
     "motorcycleBrand": "Ducati",
     "motorcycleModel": "Monster 937",
     "timestamp": "14/04/2026, 14:58:11"
+  },
+  {
+    "id": "1776242660571",
+    "date": "2026-05-09",
+    "time": "09:00",
+    "motorcycleId": "duc003",
+    "motorcycleBrand": "Ducati",
+    "motorcycleModel": "Multistrada V4",
+    "timestamp": "15/04/2026, 10:44:20"
   }
 ]
