@@ -113,12 +113,8 @@ export function buildClienteEmail(booking, companyInfoData) {
           <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;border-bottom:1px solid #e8e8e8;">${booking.motorcycleBrand} ${booking.motorcycleModel}${motorcycleExtra}</td>
         </tr>
         <tr>
-          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">Durata</td>
-          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;border-bottom:1px solid #e8e8e8;">30 minuti</td>
-        </tr>
-        <tr>
-          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;">Patente</td>
-          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;">Cat. ${booking.patente}</td>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;">Durata</td>
+          <td style="padding:11px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;">30 minuti</td>
         </tr>
       </table>
 
@@ -241,14 +237,10 @@ export function buildManagerEmail(booking, companyInfoData) {
           </td>
         </tr>
         <tr>
-          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;border-bottom:1px solid #e8e8e8;">Email</td>
-          <td style="padding:10px 16px;border-bottom:1px solid #e8e8e8;">
+          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;">Email</td>
+          <td style="padding:10px 16px;">
             <a href="mailto:${booking.email}" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#e63312;font-weight:700;text-decoration:none;">${booking.email}</a>
           </td>
-        </tr>
-        <tr>
-          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;font-weight:700;background:#f8f8f8;">Patente</td>
-          <td style="padding:10px 16px;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1a1a1a;font-weight:700;">Categoria ${booking.patente}</td>
         </tr>
       </table>
 
