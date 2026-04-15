@@ -32,7 +32,7 @@ function initSocket() {
 
 function setupEventListeners() {
   document.getElementById("testRideForm").addEventListener("submit", handleFormSubmit);
-  
+
   // Step navigation buttons
   document.getElementById("nextStep1Btn").addEventListener("click", () => nextStep(1));
   document.getElementById("prevStep2Btn").addEventListener("click", () => prevStep(2));
@@ -40,15 +40,18 @@ function setupEventListeners() {
   document.getElementById("prevStep3Btn").addEventListener("click", () => prevStep(3));
   document.getElementById("nextStep3Btn").addEventListener("click", () => nextStep(3));
   document.getElementById("prevStep4Btn").addEventListener("click", () => prevStep(4));
-  
-  document.getElementById("patente").addEventListener("change", () => {
-    AppState.selectedMotoId = null;
-    AppState.formData.motorcycleId = null;
-    document.getElementById("nextStep2Btn").disabled = true;
-    document.getElementById("motorcycleDetails").style.display = "none";
-    renderMotorcyclesGrid();
-    renderCategoryChips();
-  });
+
+  const patenteEl = document.getElementById("patente");
+  if (patenteEl) {
+    patenteEl.addEventListener("change", () => {
+      AppState.selectedMotoId = null;
+      AppState.formData.motorcycleId = null;
+      document.getElementById("nextStep2Btn").disabled = true;
+      document.getElementById("motorcycleDetails").style.display = "none";
+      renderMotorcyclesGrid();
+      renderCategoryChips();
+    });
+  }
 
   const searchInput = document.getElementById("motorcycleSearch");
   const clearBtn = document.getElementById("clearSearchBtn");
@@ -66,17 +69,36 @@ function setupEventListeners() {
     renderMotorcyclesGrid();
   });
 
-  document.getElementById("closeBookingsModal").addEventListener("click", () => {
-    document.getElementById("bookingsModal").classList.remove("show");
-  });
+  // ===== MODAL CLOSE — event delegation su document =====
+  // Gestisce tutti i pulsanti chiudi e il click sull'overlay con un unico listener,
+  // evitando problemi di timing o di elementi non ancora nel DOM.
+  document.addEventListener("click", (e) => {
+    // Click sull'overlay (sfondo scuro)
+    if (e.target.classList.contains("modal")) {
+      e.target.classList.remove("show");
+      return;
+    }
 
-  document.getElementById("closeSuccessModal").addEventListener("click", closeSuccessModal);
-  document.getElementById("closeSuccessBtn").addEventListener("click", closeSuccessModal);
-  document.getElementById("closeErrorModal").addEventListener("click", closeErrorModal);
-  document.getElementById("closeErrorBtn").addEventListener("click", closeErrorModal);
+    // Risali fino all'elemento con id (gestisce anche click su icone figlie)
+    const el = e.target.closest("#closeBookingsModal, #closeSuccessModal, #closeSuccessBtn, #closeErrorModal, #closeErrorBtn");
+    if (!el) return;
 
-  window.addEventListener("click", (e) => {
-    if (e.target.classList.contains("modal")) e.target.classList.remove("show");
+    e.preventDefault();
+    e.stopPropagation();
+
+    switch (el.id) {
+      case "closeBookingsModal":
+        document.getElementById("bookingsModal").classList.remove("show");
+        break;
+      case "closeSuccessModal":
+      case "closeSuccessBtn":
+        document.getElementById("successModal").classList.remove("show");
+        break;
+      case "closeErrorModal":
+      case "closeErrorBtn":
+        document.getElementById("errorModal").classList.remove("show");
+        break;
+    }
   });
 }
 

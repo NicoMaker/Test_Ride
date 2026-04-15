@@ -78,7 +78,6 @@ function saveStepData(step) {
     AppState.formData.cognome = document.getElementById("cognome").value;
     AppState.formData.email = document.getElementById("email").value;
     AppState.formData.telefono = document.getElementById("telefono").value;
-    AppState.formData.patente = document.getElementById("patente").value;
   } else if (step === 3) {
     AppState.formData.date = document.getElementById("date").value;
     AppState.formData.time = document.getElementById("time").value;
@@ -163,7 +162,6 @@ async function handleFormSubmit(e) {
       cognome: AppState.formData.cognome,
       email: AppState.formData.email,
       telefono: AppState.formData.telefono,
-      patente: AppState.formData.patente,
       motorcycleId: motoId,
       motorcycleBrand: AppState.formData.brand,
       motorcycleModel: moto ? moto.model : "",

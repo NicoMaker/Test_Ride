@@ -67,7 +67,6 @@ function updateSummary() {
   document.getElementById("summaryCognome").textContent = AppState.formData.cognome || "-";
   document.getElementById("summaryEmail").textContent = AppState.formData.email || "-";
   document.getElementById("summaryTelefono").textContent = AppState.formData.telefono || "-";
-  document.getElementById("summaryPatente").textContent = AppState.formData.patente || "-";
 
   const moto = AppState.motorcycles.find(m => m.id === AppState.formData.motorcycleId);
   document.getElementById("summaryBrand").textContent = AppState.formData.brand || "-";

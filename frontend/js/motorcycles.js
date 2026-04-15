@@ -1,15 +1,7 @@
 // ==================== MOTORCYCLES MANAGEMENT ====================
 
-function motoAllowedForPatente(moto) {
-  const patente = document.getElementById("patente").value;
-  if (!patente || patente === "A") return true;
-  if (patente === "A2") return moto.kw <= 35;
-  if (patente === "A1") return moto.kw <= 11 && moto.cc <= 125;
-  return true;
-}
-
 function getFilteredMotorcycles() {
-  let filtered = AppState.motorcycles.filter(motoAllowedForPatente);
+  let filtered = [...AppState.motorcycles];
 
   if (AppState.searchTerm) {
     const term = AppState.searchTerm.toLowerCase();
@@ -91,35 +83,6 @@ function displayMotorcycleDetails(moto) {
   document.getElementById("detailPower").textContent = moto.power;
   document.getElementById("detailColor").textContent = moto.color;
   document.getElementById("detailYear").textContent = moto.year;
-
-  const badge = document.getElementById("licenseBadge");
-  const patente = document.getElementById("patente").value;
-  const kw = moto.kw;
-
-  let canRide = false;
-  let reason = "";
-
-  if (patente === "A") {
-    canRide = true;
-    reason = "Patente A — nessun limite di potenza.";
-  } else if (patente === "A2") {
-    canRide = kw <= 35;
-    reason = canRide ? `${kw} kW ≤ 35 kW — rientra nel limite patente A2.` : `${kw} kW supera il limite di 35 kW per patente A2.`;
-  } else if (patente === "A1") {
-    canRide = kw <= 11 && moto.cc <= 125;
-    if (!canRide) {
-      const issues = [];
-      if (kw > 11) issues.push(`${kw} kW supera il limite di 11 kW`);
-      if (moto.cc > 125) issues.push(`${moto.cc} cc supera il limite di 125 cc`);
-      reason = issues.join(" e ") + " per patente A1/B.";
-    } else {
-      reason = `${kw} kW ≤ 11 kW e ${moto.cc} cc ≤ 125 cc — rientra nel limite patente A1/B.`;
-    }
-  }
-
-  badge.style.display = "flex";
-  badge.className = `license-badge ${canRide ? 'compatible' : 'incompatible'}`;
-  badge.innerHTML = `<i class="fas ${canRide ? 'fa-check-circle' : 'fa-exclamation-triangle'}"></i>${reason}`;
 }
 
 function renderCategoryChips() {
