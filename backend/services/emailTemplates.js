@@ -51,7 +51,11 @@ function buildHeader(companyName, badge = "") {
   </tr>`;
 }
 
-function buildFooter(companyName, pivaLine, note = "Tutti i diritti riservati") {
+function buildFooter(
+  companyName,
+  pivaLine,
+  note = "Tutti i diritti riservati",
+) {
   return `
   <tr>
     <td style="background:#111111;padding:18px 36px;text-align:center;">
@@ -63,13 +67,15 @@ function buildFooter(companyName, pivaLine, note = "Tutti i diritti riservati") 
 }
 
 export function buildClienteEmail(booking, companyInfoData) {
-  const c            = companyInfoData.company || companyInfoData;
-  const companyName  = c.name || "Palmino Motors";
-  const fullAddress  = `${c.address}, ${c.city}${c.cap ? " " + c.cap : ""}`;
-  const mapsUrl      = c.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
-  const pivaLine     = c.piva ? `&nbsp;·&nbsp;P. IVA ${c.piva}` : "";
-  const dateShort    = formatDateIT(booking.date);
-  const dateLong     = formatDateLong(booking.date);
+  const c = companyInfoData.company || companyInfoData;
+  const companyName = c.name || "Palmino Motors";
+  const fullAddress = `${c.address}, ${c.city}${c.cap ? " " + c.cap : ""}`;
+  const mapsUrl =
+    c.mapsUrl ||
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+  const pivaLine = c.piva ? `&nbsp;·&nbsp;P. IVA ${c.piva}` : "";
+  const dateShort = formatDateIT(booking.date);
+  const dateLong = formatDateLong(booking.date);
 
   const badge = `<span style="display:inline-block;background:#e63312;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 12px;border-radius:3px;">Test Ride</span>`;
 
@@ -159,17 +165,17 @@ export function buildClienteEmail(booking, companyInfoData) {
   return buildWrapper(
     buildHeader(companyName, badge) + hero,
     body,
-    buildFooter(companyName, pivaLine)
+    buildFooter(companyName, pivaLine),
   );
 }
 
 export function buildManagerEmail(booking, companyInfoData) {
-  const c           = companyInfoData.company || companyInfoData;
+  const c = companyInfoData.company || companyInfoData;
   const companyName = c.name || "Palmino Motors";
-  const pivaLine    = c.piva ? `&nbsp;&middot;&nbsp;P. IVA ${c.piva}` : "";
-  const dateShort   = formatDateIT(booking.date);
-  const dateLong    = formatDateLong(booking.date);
-  const phone       = (booking.telefono || "").replace(/\s/g, "");
+  const pivaLine = c.piva ? `&nbsp;&middot;&nbsp;P. IVA ${c.piva}` : "";
+  const dateShort = formatDateIT(booking.date);
+  const dateLong = formatDateLong(booking.date);
+  const phone = (booking.telefono || "").replace(/\s/g, "");
 
   const motorcycleExtra = booking.motorcycleCategory
     ? ` &mdash; <span style="font-weight:400;color:#777777;">${booking.motorcycleCategory}</span>`
@@ -264,6 +270,6 @@ export function buildManagerEmail(booking, companyInfoData) {
   return buildWrapper(
     adminHeader,
     body,
-    buildFooter(companyName, pivaLine, "Sistema prenotazioni automatico")
+    buildFooter(companyName, pivaLine, "Sistema prenotazioni automatico"),
   );
 }

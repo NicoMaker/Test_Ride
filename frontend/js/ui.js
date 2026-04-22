@@ -17,7 +17,13 @@ function showToast(message, type = "info", duration = 4000) {
   const container = document.getElementById("toastContainer");
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
-  const icon = { info: "fa-info-circle", success: "fa-check-circle", warning: "fa-exclamation-triangle", error: "fa-times-circle" }[type] || "fa-info-circle";
+  const icon =
+    {
+      info: "fa-info-circle",
+      success: "fa-check-circle",
+      warning: "fa-exclamation-triangle",
+      error: "fa-times-circle",
+    }[type] || "fa-info-circle";
   toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
   container.appendChild(toast);
   setTimeout(() => {
@@ -29,7 +35,8 @@ function showToast(message, type = "info", duration = 4000) {
 function showSuccessModal(booking) {
   const [y, m, d] = booking.date.split("-");
   const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
-  document.getElementById("successMessage").textContent = `Prenotazione confermata per il ${dateFormatted} alle ${booking.time}`;
+  document.getElementById("successMessage").textContent =
+    `Prenotazione confermata per il ${dateFormatted} alle ${booking.time}`;
   document.getElementById("successModal").classList.add("show");
 }
 
@@ -47,8 +54,12 @@ function closeErrorModal() {
 }
 
 function updateFormView() {
-  document.querySelectorAll(".form-step").forEach((s) => s.classList.remove("active"));
-  document.getElementById(`step${AppState.currentStep}`).classList.add("active");
+  document
+    .querySelectorAll(".form-step")
+    .forEach((s) => s.classList.remove("active"));
+  document
+    .getElementById(`step${AppState.currentStep}`)
+    .classList.add("active");
 
   const progress = (AppState.currentStep / 4) * 100;
   document.getElementById("progressFill").style.width = progress + "%";
@@ -63,15 +74,24 @@ function updateFormView() {
 }
 
 function updateSummary() {
-  document.getElementById("summaryNome").textContent = AppState.formData.nome || "-";
-  document.getElementById("summaryCognome").textContent = AppState.formData.cognome || "-";
-  document.getElementById("summaryEmail").textContent = AppState.formData.email || "-";
-  document.getElementById("summaryTelefono").textContent = AppState.formData.telefono || "-";
+  document.getElementById("summaryNome").textContent =
+    AppState.formData.nome || "-";
+  document.getElementById("summaryCognome").textContent =
+    AppState.formData.cognome || "-";
+  document.getElementById("summaryEmail").textContent =
+    AppState.formData.email || "-";
+  document.getElementById("summaryTelefono").textContent =
+    AppState.formData.telefono || "-";
 
-  const moto = AppState.motorcycles.find(m => m.id === AppState.formData.motorcycleId);
-  document.getElementById("summaryBrand").textContent = AppState.formData.brand || "-";
+  const moto = AppState.motorcycles.find(
+    (m) => m.id === AppState.formData.motorcycleId,
+  );
+  document.getElementById("summaryBrand").textContent =
+    AppState.formData.brand || "-";
   document.getElementById("summaryModel").textContent = moto ? moto.model : "-";
-  document.getElementById("summaryCategory").textContent = moto ? moto.category : "-";
+  document.getElementById("summaryCategory").textContent = moto
+    ? moto.category
+    : "-";
 
   const dateVal = document.getElementById("date").value;
   let dateText = "-";
@@ -83,7 +103,8 @@ function updateSummary() {
     dateText = `${cap(dayName)} ${padTwo(d)}/${padTwo(m)}/${y}`;
   }
   document.getElementById("summaryDate").textContent = dateText;
-  document.getElementById("summaryTime").textContent = AppState.formData.selectedTime || "-";
+  document.getElementById("summaryTime").textContent =
+    AppState.formData.selectedTime || "-";
 }
 
 function showConflictMessage(booking) {
@@ -91,20 +112,26 @@ function showConflictMessage(booking) {
   const userMoto = AppState.formData.motorcycleId;
   const userTime = AppState.formData.selectedTime;
 
-  if (booking.date === userDate && booking.motorcycleId === userMoto && booking.time === userTime) {
+  if (
+    booking.date === userDate &&
+    booking.motorcycleId === userMoto &&
+    booking.time === userTime
+  ) {
     document.getElementById("time").value = "";
     AppState.formData.selectedTime = "";
-    document.querySelectorAll(".time-slot").forEach((s) => s.classList.remove("selected"));
+    document
+      .querySelectorAll(".time-slot")
+      .forEach((s) => s.classList.remove("selected"));
 
     const [y, m, d] = booking.date.split("-");
     const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
 
     showErrorModal(
       `<strong>Orario non più disponibile</strong><br><br>` +
-      `Lo slot delle <strong>${booking.time}</strong> del <strong>${dateFormatted}</strong> ` +
-      `per la <strong>${booking.motorcycleBrand} ${booking.motorcycleModel}</strong> ` +
-      `è stato appena prenotato da un altro utente.<br><br>` +
-      `Per favore seleziona un orario diverso.`
+        `Lo slot delle <strong>${booking.time}</strong> del <strong>${dateFormatted}</strong> ` +
+        `per la <strong>${booking.motorcycleBrand} ${booking.motorcycleModel}</strong> ` +
+        `è stato appena prenotato da un altro utente.<br><br>` +
+        `Per favore seleziona un orario diverso.`,
     );
     AppState.currentStep = 3;
     updateFormView();

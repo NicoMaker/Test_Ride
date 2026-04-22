@@ -6,7 +6,8 @@ const router = Router();
 
 router.get("/company-info", (req, res) => {
   const data = readJSON(COMPANY_FILE);
-  if (!data) return res.status(500).json({ error: "Errore caricamento dati azienda" });
+  if (!data)
+    return res.status(500).json({ error: "Errore caricamento dati azienda" });
   res.json(data);
 });
 

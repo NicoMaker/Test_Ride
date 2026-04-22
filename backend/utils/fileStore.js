@@ -2,8 +2,11 @@ import fs from "fs";
 import { BOOKINGS_FILE } from "../config/paths.js";
 
 export function readJSON(filePath) {
-  try { return JSON.parse(fs.readFileSync(filePath, "utf8")); }
-  catch { return null; }
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+  } catch {
+    return null;
+  }
 }
 
 export function writeJSON(filePath, data) {
@@ -16,7 +19,7 @@ export function ensureBookingsFile() {
 
 export function buildBookedSlots(bookings) {
   const map = {};
-  bookings.forEach(b => {
+  bookings.forEach((b) => {
     const key = `${b.date}|${b.motorcycleId}`;
     if (!map[key]) map[key] = [];
     if (!map[key].includes(b.time)) map[key].push(b.time);

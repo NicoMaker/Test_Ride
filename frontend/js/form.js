@@ -36,7 +36,9 @@ function validateStep(step) {
     return isValid;
   }
 
-  const inputs = document.getElementById(`step${step}`).querySelectorAll("[required]");
+  const inputs = document
+    .getElementById(`step${step}`)
+    .querySelectorAll("[required]");
   let isValid = true;
   inputs.forEach((input) => {
     if (!validateInput(input)) isValid = false;
@@ -59,7 +61,11 @@ function validateInput(input) {
       isValid = false;
       errorMessage = "Email non valida";
     }
-    if (input.type === "tel" && !/^[\d\s\+\-\(\)]+$/.test(value) && value.replace(/\D/g, "").length < 10) {
+    if (
+      input.type === "tel" &&
+      !/^[\d\s\+\-\(\)]+$/.test(value) &&
+      value.replace(/\D/g, "").length < 10
+    ) {
       isValid = false;
       errorMessage = "Numero di telefono non valido";
     }
@@ -101,15 +107,20 @@ function resetForm() {
     document.getElementById("clearSearchBtn").style.display = "none";
   }
 
-  document.querySelectorAll(".time-slot").forEach((s) => s.classList.remove("selected"));
-  document.querySelectorAll(".date-slot").forEach((s) => s.classList.remove("selected"));
+  document
+    .querySelectorAll(".time-slot")
+    .forEach((s) => s.classList.remove("selected"));
+  document
+    .querySelectorAll(".date-slot")
+    .forEach((s) => s.classList.remove("selected"));
   document.querySelectorAll(".error").forEach((el) => (el.textContent = ""));
   document.getElementById("timeSlotsContainer").innerHTML = "";
 
   const settings = AppState.companyInfo?.testRideSettings;
   if (settings?.daysAvailable) {
     document.getElementById("dateSlotsContainer").innerHTML = "";
-    document.getElementById("date").innerHTML = '<option value="">Seleziona data...</option>';
+    document.getElementById("date").innerHTML =
+      '<option value="">Seleziona data...</option>';
     AppState.dateSlotsMap = {};
     loadDates(settings.daysAvailable, settings.defaultTimeSlots);
   }
@@ -123,7 +134,8 @@ async function handleFormSubmit(e) {
   e.preventDefault();
 
   if (!document.getElementById("terms").checked) {
-    document.getElementById("termsError").textContent = "Devi accettare i termini e le condizioni";
+    document.getElementById("termsError").textContent =
+      "Devi accettare i termini e le condizioni";
     return;
   }
 
@@ -140,13 +152,15 @@ async function handleFormSubmit(e) {
 
     showErrorModal(
       `<strong>Orario non disponibile</strong><br><br>` +
-      `Lo slot delle <strong>${time}</strong> del <strong>${dateFormatted}</strong> ` +
-      `per la <strong>${motoName}</strong> è già stato prenotato.<br><br>` +
-      `Per favore seleziona un orario diverso.`
+        `Lo slot delle <strong>${time}</strong> del <strong>${dateFormatted}</strong> ` +
+        `per la <strong>${motoName}</strong> è già stato prenotato.<br><br>` +
+        `Per favore seleziona un orario diverso.`,
     );
     document.getElementById("time").value = "";
     AppState.formData.selectedTime = "";
-    document.querySelectorAll(".time-slot").forEach((s) => s.classList.remove("selected"));
+    document
+      .querySelectorAll(".time-slot")
+      .forEach((s) => s.classList.remove("selected"));
     AppState.currentStep = 3;
     updateFormView();
     return;
@@ -180,17 +194,20 @@ async function handleFormSubmit(e) {
         const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
         showErrorModal(
           `<strong>Orario non più disponibile</strong><br><br>` +
-          `Un altro utente ha prenotato lo slot delle <strong>${time}</strong> ` +
-          `del <strong>${dateFormatted}</strong> per la ` +
-          `<strong>${booking.motorcycleBrand} ${booking.motorcycleModel}</strong> ` +
-          `pochi istanti prima di te.<br><br>` +
-          `Per favore seleziona un orario diverso.`
+            `Un altro utente ha prenotato lo slot delle <strong>${time}</strong> ` +
+            `del <strong>${dateFormatted}</strong> per la ` +
+            `<strong>${booking.motorcycleBrand} ${booking.motorcycleModel}</strong> ` +
+            `pochi istanti prima di te.<br><br>` +
+            `Per favore seleziona un orario diverso.`,
         );
         if (!AppState.bookedSlots[key]) AppState.bookedSlots[key] = [];
-        if (!AppState.bookedSlots[key].includes(time)) AppState.bookedSlots[key].push(time);
+        if (!AppState.bookedSlots[key].includes(time))
+          AppState.bookedSlots[key].push(time);
         document.getElementById("time").value = "";
         AppState.formData.selectedTime = "";
-        document.querySelectorAll(".time-slot").forEach((s) => s.classList.remove("selected"));
+        document
+          .querySelectorAll(".time-slot")
+          .forEach((s) => s.classList.remove("selected"));
         refreshTimeSlotsUI();
         AppState.currentStep = 3;
         updateFormView();
@@ -207,6 +224,8 @@ async function handleFormSubmit(e) {
   } catch (error) {
     showLoader(false);
     console.error("Errore nella prenotazione:", error);
-    showErrorModal(error.message || "Errore durante la prenotazione. Riprovare.");
+    showErrorModal(
+      error.message || "Errore durante la prenotazione. Riprovare.",
+    );
   }
 }

@@ -18,12 +18,12 @@ import { BOOKINGS_FILE } from "./config/paths.js";
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname  = path.dirname(__filename);
+const __dirname = path.dirname(__filename);
 
-const app        = express();
+const app = express();
 const httpServer = createServer(app);
-const io         = new SocketIOServer(httpServer);
-const PORT       = process.env.PORT || 3000;
+const io = new SocketIOServer(httpServer);
+const PORT = process.env.PORT || 3000;
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors());
@@ -44,18 +44,20 @@ app.use("/api", bookingRoutes(io));
 
 // ── Health ──────────────────────────────────────────────────────────────────
 app.get("/api/health", (_req, res) =>
-  res.json({ status: "ok", timestamp: new Date().toISOString() })
+  res.json({ status: "ok", timestamp: new Date().toISOString() }),
 );
 
 // ── Error handler ───────────────────────────────────────────────────────────
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).json({ success: false, message: "Errore del server", error: err.message });
+  res
+    .status(500)
+    .json({ success: false, message: "Errore del server", error: err.message });
 });
 
 // ── Start ───────────────────────────────────────────────────────────────────
 httpServer.listen(PORT, "0.0.0.0", async () => {
-  const localIP  = getLocalIP();
+  const localIP = getLocalIP();
   const publicIP = await getPublicIP();
   console.log("✅  Server avviato con Socket.io");
   console.log(`📍  Localhost:    http://localhost:${PORT}`);

@@ -20,7 +20,10 @@ function loadDates(daysAvailable, defaultTimeSlots) {
     const d = padTwo(day.day);
     const value = `${day.year}-${month}-${d}`;
     const label = formatDateLabel(day.day, day.month, day.year);
-    const slots = day.timeSlots && day.timeSlots.length ? day.timeSlots : defaultTimeSlots || [];
+    const slots =
+      day.timeSlots && day.timeSlots.length
+        ? day.timeSlots
+        : defaultTimeSlots || [];
     AppState.dateSlotsMap[value] = slots;
     availableDateValues.push(value);
 
@@ -45,7 +48,9 @@ function loadDates(daysAvailable, defaultTimeSlots) {
 }
 
 function selectDateCard(value, card, silent = false) {
-  document.querySelectorAll(".date-slot").forEach((s) => s.classList.remove("selected"));
+  document
+    .querySelectorAll(".date-slot")
+    .forEach((s) => s.classList.remove("selected"));
   card.classList.add("selected");
   document.getElementById("date").value = value;
   AppState.formData.selectedDate = value;
@@ -58,7 +63,9 @@ function selectDateCard(value, card, silent = false) {
   if (time && !slots.includes(time)) {
     document.getElementById("time").value = "";
     AppState.formData.selectedTime = "";
-    document.querySelectorAll(".time-slot").forEach((s) => s.classList.remove("selected"));
+    document
+      .querySelectorAll(".time-slot")
+      .forEach((s) => s.classList.remove("selected"));
   }
 }
 
@@ -89,7 +96,9 @@ function loadTimeSlotsForDate(dateVal) {
 
     if (!isBooked) {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".time-slot").forEach((s) => s.classList.remove("selected"));
+        document
+          .querySelectorAll(".time-slot")
+          .forEach((s) => s.classList.remove("selected"));
         btn.classList.add("selected");
         document.getElementById("time").value = slot;
         AppState.formData.selectedTime = slot;

@@ -10,8 +10,8 @@ export function formatDateIT(dateStr) {
 export function formatDateLong(dateStr) {
   return new Date(dateStr + "T00:00:00").toLocaleDateString("it-IT", {
     weekday: "long",
-    year:    "numeric",
-    month:   "long",
-    day:     "numeric",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }

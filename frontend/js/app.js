@@ -24,22 +24,40 @@ function initSocket() {
     const currentMoto = AppState.formData.motorcycleId;
     const userTime = AppState.formData.selectedTime;
 
-    if (booking.date === currentDate && booking.motorcycleId === currentMoto && booking.time === userTime) {
+    if (
+      booking.date === currentDate &&
+      booking.motorcycleId === currentMoto &&
+      booking.time === userTime
+    ) {
       showConflictMessage(booking);
     }
   });
 }
 
 function setupEventListeners() {
-  document.getElementById("testRideForm").addEventListener("submit", handleFormSubmit);
+  document
+    .getElementById("testRideForm")
+    .addEventListener("submit", handleFormSubmit);
 
   // Step navigation buttons
-  document.getElementById("nextStep1Btn").addEventListener("click", () => nextStep(1));
-  document.getElementById("prevStep2Btn").addEventListener("click", () => prevStep(2));
-  document.getElementById("nextStep2Btn").addEventListener("click", () => nextStep(2));
-  document.getElementById("prevStep3Btn").addEventListener("click", () => prevStep(3));
-  document.getElementById("nextStep3Btn").addEventListener("click", () => nextStep(3));
-  document.getElementById("prevStep4Btn").addEventListener("click", () => prevStep(4));
+  document
+    .getElementById("nextStep1Btn")
+    .addEventListener("click", () => nextStep(1));
+  document
+    .getElementById("prevStep2Btn")
+    .addEventListener("click", () => prevStep(2));
+  document
+    .getElementById("nextStep2Btn")
+    .addEventListener("click", () => nextStep(2));
+  document
+    .getElementById("prevStep3Btn")
+    .addEventListener("click", () => prevStep(3));
+  document
+    .getElementById("nextStep3Btn")
+    .addEventListener("click", () => nextStep(3));
+  document
+    .getElementById("prevStep4Btn")
+    .addEventListener("click", () => prevStep(4));
 
   const patenteEl = document.getElementById("patente");
   if (patenteEl) {
@@ -80,7 +98,9 @@ function setupEventListeners() {
     }
 
     // Risali fino all'elemento con id (gestisce anche click su icone figlie)
-    const el = e.target.closest("#closeBookingsModal, #closeSuccessModal, #closeSuccessBtn, #closeErrorModal, #closeErrorBtn");
+    const el = e.target.closest(
+      "#closeBookingsModal, #closeSuccessModal, #closeSuccessBtn, #closeErrorModal, #closeErrorBtn",
+    );
     if (!el) return;
 
     e.preventDefault();

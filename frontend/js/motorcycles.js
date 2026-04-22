@@ -5,15 +5,18 @@ function getFilteredMotorcycles() {
 
   if (AppState.searchTerm) {
     const term = AppState.searchTerm.toLowerCase();
-    filtered = filtered.filter(moto =>
-      moto.brand.toLowerCase().includes(term) ||
-      moto.model.toLowerCase().includes(term) ||
-      (moto.category && moto.category.toLowerCase().includes(term))
+    filtered = filtered.filter(
+      (moto) =>
+        moto.brand.toLowerCase().includes(term) ||
+        moto.model.toLowerCase().includes(term) ||
+        (moto.category && moto.category.toLowerCase().includes(term)),
     );
   }
 
   if (AppState.activeCategory) {
-    filtered = filtered.filter(moto => moto.category === AppState.activeCategory);
+    filtered = filtered.filter(
+      (moto) => moto.category === AppState.activeCategory,
+    );
   }
 
   return filtered;
@@ -21,7 +24,7 @@ function getFilteredMotorcycles() {
 
 function getAllCategories() {
   const categories = new Set();
-  AppState.motorcycles.forEach(moto => {
+  AppState.motorcycles.forEach((moto) => {
     if (moto.category) categories.add(moto.category);
   });
   return Array.from(categories).sort();
@@ -36,19 +39,23 @@ function renderMotorcyclesGrid() {
     return;
   }
 
-  grid.innerHTML = filtered.map(moto => `
-    <div class="moto-card ${AppState.selectedMotoId === moto.id ? 'selected' : ''}" data-id="${moto.id}">
+  grid.innerHTML = filtered
+    .map(
+      (moto) => `
+    <div class="moto-card ${AppState.selectedMotoId === moto.id ? "selected" : ""}" data-id="${moto.id}">
       <div class="moto-info">
         <div class="moto-brand">${escapeHtml(moto.brand)}</div>
         <div class="moto-model">${escapeHtml(moto.model)}</div>
-        <div class="moto-category">${escapeHtml(moto.category || '—')}</div>
+        <div class="moto-category">${escapeHtml(moto.category || "—")}</div>
       </div>
       <div class="moto-badge">${moto.cc} cc</div>
     </div>
-  `).join('');
+  `,
+    )
+    .join("");
 
-  document.querySelectorAll('.moto-card').forEach(card => {
-    card.addEventListener('click', () => {
+  document.querySelectorAll(".moto-card").forEach((card) => {
+    card.addEventListener("click", () => {
       const motoId = card.dataset.id;
       selectMotorcycle(motoId);
     });
@@ -57,7 +64,7 @@ function renderMotorcyclesGrid() {
 
 function selectMotorcycle(motoId) {
   AppState.selectedMotoId = motoId;
-  const moto = AppState.motorcycles.find(m => m.id === motoId);
+  const moto = AppState.motorcycles.find((m) => m.id === motoId);
 
   if (moto) {
     AppState.formData.motorcycleId = motoId;
@@ -89,14 +96,18 @@ function renderCategoryChips() {
   const container = document.getElementById("categoryChips");
   const categories = getAllCategories();
 
-  container.innerHTML = categories.map(cat => `
-    <div class="category-chip ${AppState.activeCategory === cat ? 'active' : ''}" data-category="${cat}">
+  container.innerHTML = categories
+    .map(
+      (cat) => `
+    <div class="category-chip ${AppState.activeCategory === cat ? "active" : ""}" data-category="${cat}">
       ${escapeHtml(cat)}
     </div>
-  `).join('');
+  `,
+    )
+    .join("");
 
-  document.querySelectorAll('.category-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
+  document.querySelectorAll(".category-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
       const cat = chip.dataset.category;
       AppState.activeCategory = AppState.activeCategory === cat ? "" : cat;
       renderCategoryChips();
