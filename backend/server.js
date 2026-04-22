@@ -12,6 +12,7 @@ import { registerSocketHandlers } from "./sockets/bookingSocket.js";
 import companyRoutes from "./routes/company.js";
 import motorcycleRoutes from "./routes/motorcycles.js";
 import bookingRoutes from "./routes/bookings.js";
+import avvioHtmlRouter from "./routes/avvioHtml.js"; // ← IMPORT DEL NUOVO ROUTER
 import { getLocalIP, getPublicIP } from "./utils/network.js";
 import { BOOKINGS_FILE } from "./config/paths.js";
 
@@ -29,6 +30,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+
+// Servi file statici del frontend (CSS, JS, immagini, ecc.)
 app.use(express.static(path.join(__dirname, "../frontend")));
 
 // ── Services ────────────────────────────────────────────────────────────────
@@ -37,7 +40,7 @@ initEmailTransporter();
 // ── Socket.IO ───────────────────────────────────────────────────────────────
 registerSocketHandlers(io);
 
-// ── Routes ──────────────────────────────────────────────────────────────────
+// ── Routes API (DEVONO ESSERE PRIMA del router HTML) ────────────────────────
 app.use("/api", companyRoutes);
 app.use("/api", motorcycleRoutes);
 app.use("/api", bookingRoutes(io));
@@ -47,7 +50,11 @@ app.get("/api/health", (_req, res) =>
   res.json({ status: "ok", timestamp: new Date().toISOString() }),
 );
 
-// ── Error handler ───────────────────────────────────────────────────────────
+// ⭐ IMPORTANTE: Il router HTML deve andare DOPO tutte le route API
+// ma PRIMA dell'error handler
+app.use(avvioHtmlRouter); // ← SERVE index.html per tutte le altre route
+
+// ── Error handler (DEVE ANDARE DOPO il router HTML) ─────────────────────────
 app.use((err, _req, res, _next) => {
   console.error(err);
   res

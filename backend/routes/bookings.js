@@ -81,13 +81,11 @@ export default function bookingRoutes(io) {
       res.status(201).json({ success: true, booking });
     } catch (error) {
       console.error("Errore prenotazione:", error);
-      res
-        .status(500)
-        .json({
-          success: false,
-          message: "Errore del server",
-          error: error.message,
-        });
+      res.status(500).json({
+        success: false,
+        message: "Errore del server",
+        error: error.message,
+      });
     }
   });
 
