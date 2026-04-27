@@ -12,7 +12,7 @@ import { registerSocketHandlers } from "./sockets/bookingSocket.js";
 import companyRoutes from "./routes/company.js";
 import motorcycleRoutes from "./routes/motorcycles.js";
 import bookingRoutes from "./routes/bookings.js";
-import avvioHtmlRouter from "./routes/avvioHtml.js"; // ← IMPORT DEL NUOVO ROUTER
+import avvioHtmlRouter from "./routes/avviohtml.js"; // ← IMPORT DEL NUOVO ROUTER
 import { getLocalIP, getPublicIP } from "./utils/network.js";
 import { BOOKINGS_FILE } from "./config/paths.js";
 
@@ -24,7 +24,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer);
-const PORT = process.env.PORT || 3000;
+const PORT = 3002;
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors());
