@@ -1,4 +1,4 @@
-import { formatDateIT, formatDateLong } from "../utils/dateFormat.js";
+import { formatDateIT, formatDateLong } from "../../utils/dateFormat.js";
 
 const baseStyles = `
   body,table,td,a{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}

@@ -1,3 +1,4 @@
+// Utility di rete: rilevamento IP locale e pubblico per il log di avvio.
 import os from "os";
 
 export function getLocalIP() {

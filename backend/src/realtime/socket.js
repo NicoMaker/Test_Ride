@@ -1,16 +1,14 @@
+// Gestione delle connessioni Socket.IO: invio stato slot al connect.
 import {
-  ensureBookingsFile,
-  readJSON,
+  getAllBookings,
   buildBookedSlots,
-} from "../utils/fileStore.js";
-import { BOOKINGS_FILE } from "../config/paths.js";
+} from "../repositories/bookingsRepository.js";
 
 export function registerSocketHandlers(io) {
   io.on("connection", (socket) => {
     console.log(`🔌 Client connesso: ${socket.id}`);
 
-    ensureBookingsFile();
-    const bookings = readJSON(BOOKINGS_FILE) || [];
+    const bookings = getAllBookings();
     socket.emit("slots_update", { bookedSlots: buildBookedSlots(bookings) });
 
     socket.on("disconnect", () => {

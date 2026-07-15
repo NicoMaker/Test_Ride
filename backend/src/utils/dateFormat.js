@@ -1,3 +1,4 @@
+// Formattazione date in stile italiano, condivisa dai template email.
 export function padTwo(n) {
   return String(n).padStart(2, "0");
 }

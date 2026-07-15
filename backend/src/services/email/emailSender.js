@@ -1,6 +1,7 @@
-import { getTransporter } from "./email.js";
+// Invio delle email di conferma (cliente + manager).
+import { getTransporter } from "./transporter.js";
 import { buildClienteEmail, buildManagerEmail } from "./emailTemplates.js";
-import { formatDateIT } from "../utils/dateFormat.js";
+import { formatDateIT } from "../../utils/dateFormat.js";
 
 export async function sendConfirmationEmails(booking, companyInfoData) {
   const transporter = getTransporter();

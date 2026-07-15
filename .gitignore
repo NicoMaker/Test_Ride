@@ -1,2 +1,14 @@
-backend/.env
-backend/node_modules
+# Dipendenze
+Backend/node_modules
+node_modules
+
+# Ambiente
+Backend/.env
+.env
+
+# Dati generati a runtime
+frontend/data/bookings.json
+
+# Log e sistema
+*.log
+.DS_Store

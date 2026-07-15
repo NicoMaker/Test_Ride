@@ -1,4 +1,4 @@
-// ==================== UI COMPONENTS ====================
+// ==================== VISTE FORM & STATO CONNESSIONE ====================
 
 function setSocketStatus(status) {
   const el = document.getElementById("socketStatus");
@@ -7,50 +7,6 @@ function setSocketStatus(status) {
   if (status === "connected") label.textContent = "In tempo reale";
   if (status === "disconnected") label.textContent = "Disconnesso";
   if (status === "connecting") label.textContent = "Connessione…";
-}
-
-function showLoader(show) {
-  document.getElementById("loader").classList.toggle("show", show);
-}
-
-function showToast(message, type = "info", duration = 4000) {
-  const container = document.getElementById("toastContainer");
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  const icon =
-    {
-      info: "fa-info-circle",
-      success: "fa-check-circle",
-      warning: "fa-exclamation-triangle",
-      error: "fa-times-circle",
-    }[type] || "fa-info-circle";
-  toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
-  container.appendChild(toast);
-  setTimeout(() => {
-    toast.style.animation = "toastOut .35s ease both";
-    setTimeout(() => toast.remove(), 350);
-  }, duration);
-}
-
-function showSuccessModal(booking) {
-  const [y, m, d] = booking.date.split("-");
-  const dateFormatted = `${padTwo(d)}/${padTwo(m)}/${y}`;
-  document.getElementById("successMessage").textContent =
-    `Prenotazione confermata per il ${dateFormatted} alle ${booking.time}`;
-  document.getElementById("successModal").classList.add("show");
-}
-
-function closeSuccessModal() {
-  document.getElementById("successModal").classList.remove("show");
-}
-
-function showErrorModal(message) {
-  document.getElementById("errorMessage").innerHTML = message;
-  document.getElementById("errorModal").classList.add("show");
-}
-
-function closeErrorModal() {
-  document.getElementById("errorModal").classList.remove("show");
 }
 
 function updateFormView() {

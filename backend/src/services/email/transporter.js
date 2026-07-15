@@ -1,15 +1,17 @@
+// Inizializzazione e accesso al transporter Nodemailer.
 import nodemailer from "nodemailer";
+import { config } from "../../config/env.js";
 
 let transporter;
 
 export function initEmailTransporter() {
   transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || "587"),
-    secure: process.env.EMAIL_PORT === "465",
+    host: config.email.host,
+    port: config.email.port,
+    secure: config.email.port === 465,
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
+      user: config.email.user,
+      pass: config.email.password,
     },
   });
 

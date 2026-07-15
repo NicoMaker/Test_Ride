@@ -570,13 +570,25 @@
     </div>
     <!-- /app-container -->
 
+    <!-- Socket.IO client -->
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/state.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/slots.js"></script>
-    <script src="js/motorcycles.js"></script>
-    <script src="js/form.js"></script>
-    <script src="js/app.js"></script>
+
+    <!-- Config / stato globale -->
+    <script src="js/config/state.js"></script>
+
+    <!-- UI (componenti di interfaccia) -->
+    <script src="js/ui/notifications.js"></script>
+    <script src="js/ui/modals.js"></script>
+    <script src="js/ui/form-view.js"></script>
+
+    <!-- Feature (funzionalità) -->
+    <script src="js/features/motorcycles.js"></script>
+    <script src="js/features/slots.js"></script>
+    <script src="js/features/booking-form.js"></script>
+
+    <!-- Core (API, realtime, bootstrap) -->
+    <script src="js/core/api.js"></script>
+    <script src="js/core/realtime.js"></script>
+    <script src="js/core/app.js"></script>
   </body>
 </html>
